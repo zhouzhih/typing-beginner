@@ -60,6 +60,7 @@ export default function App() {
   const [input, setInput] = useState('')
   const [startedAt, setStartedAt] = useState('')
   const [activePrompt, setActivePrompt] = useState('')
+  const [activePromptIndex, setActivePromptIndex] = useState(0)
   const [result, setResult] = useState<PracticeRecord | null>(null)
   const [saveWarning, setSaveWarning] = useState('')
 
@@ -71,7 +72,9 @@ export default function App() {
     () => getPromptForLesson(selectedLesson, completedCount),
     [completedCount, selectedLesson],
   )
+  const nextPromptIndex = (completedCount % selectedLesson.prompts.length) + 1
   const prompt = activePrompt || nextPrompt
+  const promptIndex = activePromptIndex || nextPromptIndex
   const evaluation = evaluatePractice(prompt, input)
   const unlockHint = getUnlockHint(selectedLesson, practiceData.records)
 
@@ -80,6 +83,7 @@ export default function App() {
     setResult(null)
     setSaveWarning('')
     setActivePrompt(nextPrompt)
+    setActivePromptIndex(nextPromptIndex)
     setStartedAt(new Date().toISOString())
     setIsPracticing(true)
   }
@@ -90,6 +94,7 @@ export default function App() {
     setResult(null)
     setSaveWarning('')
     setActivePrompt('')
+    setActivePromptIndex(0)
     setIsPracticing(false)
   }
 
@@ -154,6 +159,8 @@ export default function App() {
             lesson={selectedLesson}
             onInputChange={handleInputChange}
             onStart={startPractice}
+            promptIndex={promptIndex}
+            promptTotal={selectedLesson.prompts.length}
             prompt={prompt}
           />
           <ResultCard

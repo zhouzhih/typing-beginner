@@ -22,6 +22,8 @@ describe('courses', () => {
     const shortLines = getLessonById('short-lines')
 
     expect(letterFriends?.prompts.length).toBeGreaterThanOrEqual(12)
+    expect(letterFriends?.prompts[0].replace(/\s/g, '').length).toBeGreaterThanOrEqual(16)
+    expect(letterFriends?.prompts.every((prompt) => prompt.replace(/\s/g, '').length >= 14)).toBe(true)
     expect(letterFriends?.requiredPasses).toBe(4)
     expect(tinyWords?.prompts.length).toBeGreaterThanOrEqual(10)
     expect(tinyWords?.requiredPasses).toBe(5)

@@ -8,6 +8,8 @@ type PracticePanelProps = {
   input: string
   evaluation: PracticeEvaluation
   isPracticing: boolean
+  promptIndex: number
+  promptTotal: number
   onStart: () => void
   onInputChange: (value: string) => void
 }
@@ -18,6 +20,8 @@ export function PracticePanel({
   input,
   evaluation,
   isPracticing,
+  promptIndex,
+  promptTotal,
   onStart,
   onInputChange,
 }: PracticePanelProps) {
@@ -32,6 +36,9 @@ export function PracticePanel({
           <div className="section-label">今日任务</div>
           <h2>{lesson.title}</h2>
           <p>{isPracticing ? '跟着彩色小火车输入' : '准备好就开始今天的练习'}</p>
+          <p className="prompt-meta">
+            第 {promptIndex} / {promptTotal} 题
+          </p>
         </div>
         <button className="start-button" onClick={onStart} type="button">
           {isPracticing ? '重新开始' : '开始'}

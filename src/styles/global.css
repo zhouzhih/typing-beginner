@@ -154,6 +154,18 @@ h2 {
   margin-top: 6px;
 }
 
+.practice-header .prompt-meta {
+  display: inline-flex;
+  margin-top: 10px;
+  border: 2px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--blue);
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
 .start-button,
 .secondary-button {
   border: 0;
