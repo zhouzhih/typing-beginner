@@ -29,6 +29,7 @@ describe('buildPracticeReportCsv', () => {
   test('exports practice records with lesson names and kid friendly columns', () => {
     const csv = buildPracticeReportCsv([record], [lesson])
 
+    expect(csv.startsWith('\uFEFF')).toBe(true)
     expect(csv).toContain('完成时间,课程,练习内容,准确率,小错误,用时秒,星星,是否通过')
     expect(csv).toContain('2026-05-23,手指的家,asdf,100%,0,8,3,是')
   })

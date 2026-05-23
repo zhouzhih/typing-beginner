@@ -116,6 +116,11 @@ describe('App', () => {
     const reportBlob = createObjectURL.mock.calls[0][0] as Blob
 
     expect(reportBlob.type).toBe('text/csv;charset=utf-8')
+    await expect(reportBlob.arrayBuffer()).resolves.toSatisfy((buffer: ArrayBuffer) => {
+      const bytes = new Uint8Array(buffer)
+
+      return bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
+    })
     await expect(reportBlob.text()).resolves.toContain('手指的家,asdf jkl;,100%,0')
     expect(anchorClick).toHaveBeenCalledTimes(1)
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:typing-report')

@@ -1,6 +1,7 @@
 import type { Lesson, PracticeRecord } from './types'
 
 const CSV_HEADER = ['完成时间', '课程', '练习内容', '准确率', '小错误', '用时秒', '星星', '是否通过']
+const UTF8_BOM = '\uFEFF'
 
 function escapeCsvCell(value: string | number): string {
   const text = String(value)
@@ -25,7 +26,9 @@ export function buildPracticeReportCsv(records: PracticeRecord[], lessons: Lesso
     record.passed ? '是' : '否',
   ])
 
-  return [CSV_HEADER, ...rows]
+  const csvBody = [CSV_HEADER, ...rows]
     .map((row) => row.map((cell) => escapeCsvCell(cell)).join(','))
     .join('\n')
+
+  return `${UTF8_BOM}${csvBody}`
 }
