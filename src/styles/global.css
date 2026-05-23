@@ -306,6 +306,16 @@ h2 {
   font-weight: 800;
 }
 
+.unlock-hint {
+  margin-top: 12px;
+  border: 2px solid #fdba74;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #9a3412;
+  padding: 10px 12px;
+  font-weight: 900;
+}
+
 .side-card {
   padding: 16px;
 }

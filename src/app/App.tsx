@@ -33,6 +33,23 @@ function getInitialLessonId(savedLessonId: string): string {
   return savedLesson.id
 }
 
+function getUnlockHint(lesson: Lesson, records: PracticeRecord[]): string {
+  const nextLesson = getAllLessons().find((candidate) => candidate.unlockAfter === lesson.id)
+
+  if (!nextLesson) {
+    return '这一组课程已经完成，可以继续复习拿满星。'
+  }
+
+  const passedCount = records.filter((record) => record.lessonId === lesson.id && record.passed).length
+  const remaining = Math.max(0, 2 - passedCount)
+
+  if (remaining === 0) {
+    return `「${nextLesson.title}」已解锁，可以挑战下一关了。`
+  }
+
+  return `再通过 ${remaining} 次，就能解锁「${nextLesson.title}」`
+}
+
 export default function App() {
   const [practiceData, setPracticeData] = useState(() => loadPracticeData())
   const [selectedLessonId, setSelectedLessonId] = useState(() =>
@@ -55,6 +72,7 @@ export default function App() {
   )
   const prompt = activePrompt || nextPrompt
   const evaluation = evaluatePractice(prompt, input)
+  const unlockHint = getUnlockHint(selectedLesson, practiceData.records)
 
   function startPractice() {
     setInput('')
@@ -137,7 +155,12 @@ export default function App() {
             onStart={startPractice}
             prompt={prompt}
           />
-          <ResultCard result={result} saveWarning={saveWarning} onRetry={startPractice} />
+          <ResultCard
+            result={result}
+            saveWarning={saveWarning}
+            unlockHint={unlockHint}
+            onRetry={startPractice}
+          />
         </section>
 
         <div className="right-column">

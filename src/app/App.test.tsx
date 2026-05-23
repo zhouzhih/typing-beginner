@@ -17,12 +17,14 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: '打字小课堂' })).toBeInTheDocument()
+    expect(screen.getByText('再通过 2 次，就能解锁「字母朋友」')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     await user.type(screen.getByLabelText('打字输入框'), 'asdf jkl;')
 
     expect(await screen.findByText('本关星星')).toBeInTheDocument()
     expect(screen.getByText('准确率 100%')).toBeInTheDocument()
+    expect(screen.getByText('再通过 1 次，就能解锁「字母朋友」')).toBeInTheDocument()
     expect(screen.getByLabelText('练习内容').textContent?.replace(/\s/g, '')).toBe('asdfjkl;')
 
     const data = loadPracticeData(localStorage)
