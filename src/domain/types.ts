@@ -23,6 +23,7 @@ export type Lesson = {
   kind: LessonKind
   prompts: string[]
   unlockAfter?: string
+  requiredPasses?: number
 }
 
 export type Course = {

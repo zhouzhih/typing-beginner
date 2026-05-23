@@ -15,4 +15,17 @@ describe('courses', () => {
     expect(getAllLessons().map((lesson) => lesson.id)).toContain('home-row')
     expect(getLessonById('home-row')?.title).toBe('手指的家')
   })
+
+  test('uses larger practice sets and stronger difficulty steps after home row', () => {
+    const letterFriends = getLessonById('letter-friends')
+    const tinyWords = getLessonById('tiny-words')
+    const shortLines = getLessonById('short-lines')
+
+    expect(letterFriends?.prompts.length).toBeGreaterThanOrEqual(12)
+    expect(letterFriends?.requiredPasses).toBe(4)
+    expect(tinyWords?.prompts.length).toBeGreaterThanOrEqual(10)
+    expect(tinyWords?.requiredPasses).toBe(5)
+    expect(shortLines?.prompts.length).toBeGreaterThanOrEqual(10)
+    expect(shortLines?.prompts.some((prompt) => /[A-Z]/.test(prompt) && /[.!?]/.test(prompt))).toBe(true)
+  })
 })

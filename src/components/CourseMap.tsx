@@ -14,6 +14,8 @@ export function CourseMap({
   selectedLessonId,
   onSelectLesson,
 }: CourseMapProps) {
+  const lessons = courses.flatMap((course) => course.lessons)
+
   return (
     <section className="side-card course-map" aria-labelledby="course-map-heading">
       <div className="section-label">课程地图</div>
@@ -30,7 +32,7 @@ export function CourseMap({
             {course.lessons.length > 0 ? (
               <div className="lesson-list">
                 {course.lessons.map((lesson) => {
-                  const unlocked = isLessonUnlocked(lesson, records)
+                  const unlocked = isLessonUnlocked(lesson, records, lessons)
                   const selected = lesson.id === selectedLessonId
 
                   return (

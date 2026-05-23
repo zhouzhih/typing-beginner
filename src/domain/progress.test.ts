@@ -50,6 +50,26 @@ describe('progress helpers', () => {
     expect(isLessonUnlocked(secondLesson, records)).toBe(true)
   })
 
+  test('uses the prerequisite required pass count when it is higher than the default', () => {
+    const harderFirstLesson = {
+      ...firstLesson,
+      requiredPasses: 3,
+    } as Lesson & { requiredPasses: number }
+    const records = [
+      record({ id: 'first-pass', lessonId: 'home-row', passed: true }),
+      record({ id: 'second-pass', lessonId: 'home-row', passed: true }),
+    ]
+
+    expect(isLessonUnlocked(secondLesson, records, [harderFirstLesson, secondLesson])).toBe(false)
+    expect(
+      isLessonUnlocked(
+        secondLesson,
+        [...records, record({ id: 'third-pass', lessonId: 'home-row', passed: true })],
+        [harderFirstLesson, secondLesson],
+      ),
+    ).toBe(true)
+  })
+
   test('keeps a later lesson locked until prerequisite is passed twice', () => {
     const records = [
       record({ id: 'first-pass', lessonId: 'home-row', passed: true }),

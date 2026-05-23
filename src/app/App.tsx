@@ -6,6 +6,7 @@ import { ProgressSummary } from '../components/ProgressSummary'
 import { ResultCard } from '../components/ResultCard'
 import { courses, getAllLessons, getLessonById } from '../data/courses'
 import { evaluatePractice } from '../domain/practiceEngine'
+import { getRequiredPasses } from '../domain/progress'
 import { calculateAccuracy, calculateDurationMs, calculateStars, isPassed } from '../domain/stats'
 import type { Lesson, PracticeRecord } from '../domain/types'
 import { loadPracticeData, savePracticeData } from '../storage/practiceStorage'
@@ -41,7 +42,7 @@ function getUnlockHint(lesson: Lesson, records: PracticeRecord[]): string {
   }
 
   const passedCount = records.filter((record) => record.lessonId === lesson.id && record.passed).length
-  const remaining = Math.max(0, 2 - passedCount)
+  const remaining = Math.max(0, getRequiredPasses(lesson) - passedCount)
 
   if (remaining === 0) {
     return `「${nextLesson.title}」已解锁，可以挑战下一关了。`
