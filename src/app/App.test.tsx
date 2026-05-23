@@ -75,6 +75,16 @@ describe('App', () => {
     expect(data.records[0].accuracy).toBe(89)
   })
 
+  test('focuses the typing input when practice starts', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+
+    expect(screen.getByLabelText('打字输入框')).toHaveFocus()
+  })
+
   test('opens the compact typing buddy panel and keeps custom avatars local', async () => {
     const user = userEvent.setup()
 

@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react'
+import { useEffect, useRef, type ChangeEvent } from 'react'
 
 import type { Lesson, PracticeEvaluation } from '../domain/types'
 
@@ -27,6 +27,14 @@ export function PracticePanel({
   onStart,
   onInputChange,
 }: PracticePanelProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isPracticing) {
+      inputRef.current?.focus()
+    }
+  }, [isPracticing, prompt])
+
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     onInputChange(event.target.value)
   }
@@ -67,6 +75,7 @@ export function PracticePanel({
         maxLength={prompt.length}
         onChange={handleInputChange}
         placeholder={isPracticing ? '在这里打字' : '点击开始后输入'}
+        ref={inputRef}
         spellCheck={false}
         value={input}
       />
