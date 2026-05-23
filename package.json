@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "icons": "tauri icon src-tauri/app-icon.svg",
     "tauri": "tauri",
     "mac:build": "tauri build",
     "mac:dev": "tauri dev"

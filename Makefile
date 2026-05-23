@@ -1,10 +1,13 @@
-.PHONY: test web mac-dev mac-app verify
+.PHONY: test web icons mac-dev mac-app verify
 
 test:
 	npm test
 
 web:
 	npm run build
+
+icons:
+	npm run icons
 
 mac-dev:
 	npm run mac:dev
