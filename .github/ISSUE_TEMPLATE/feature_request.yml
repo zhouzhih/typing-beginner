@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement or new lesson idea.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What should this help with?
+      description: Describe the learner, parent, or teacher need.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed idea
+      description: What should the app do?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Mention other ways this could be handled.

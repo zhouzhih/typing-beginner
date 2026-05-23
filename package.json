@@ -2,6 +2,16 @@
   "name": "typing-beginner",
   "private": true,
   "version": "0.0.0",
+  "description": "面向小学生的卡通打字练习软件",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhouzhih/typing-beginner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zhouzhih/typing-beginner/issues"
+  },
+  "homepage": "https://github.com/zhouzhih/typing-beginner#readme",
   "type": "module",
   "scripts": {
     "dev": "vite",

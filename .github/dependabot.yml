@@ -1,0 +1,38 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    groups:
+      npm-runtime:
+        patterns:
+          - '*'
+        dependency-type: production
+      npm-development:
+        patterns:
+          - '*'
+        dependency-type: development
+
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '11:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
