@@ -132,6 +132,7 @@ src-tauri/      Tauri 桌面 App 配置和 Rust 入口
 - [Security Policy](SECURITY.md)
 - [Support](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
+- [GitHub Repository Settings](docs/github-settings.md)
 
 ## License
 
