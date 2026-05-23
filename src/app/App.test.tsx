@@ -64,6 +64,9 @@ describe('App', () => {
     expect(screen.getByLabelText('选择打字伙伴')).toHaveValue('keyboard-sprite')
     expect(screen.getByAltText('键盘小精灵头像')).toBeInTheDocument()
 
+    await user.click(screen.getByRole('button', { name: '和伙伴击掌' }))
+    expect(screen.getByText('伙伴开心 +1')).toBeInTheDocument()
+
     await user.selectOptions(screen.getByLabelText('选择打字伙伴'), 'forest-ranger')
     expect(loadPracticeData(localStorage).selectedMascotId).toBe('forest-ranger')
     expect(screen.getByAltText('森林小游侠头像')).toBeInTheDocument()
@@ -79,6 +82,20 @@ describe('App', () => {
     expect(screen.queryByRole('dialog', { name: '打字伙伴' })).not.toBeInTheDocument()
   })
 
+  test('lets a child switch the page style and saves it', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    expect(screen.getByRole('group', { name: '页面风格' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '天空蓝' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '星空夜' }))
+
+    expect(loadPracticeData(localStorage).selectedThemeId).toBe('space')
+    expect(screen.getByRole('button', { name: '星空夜' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   test('shows a longer letter-friends prompt and lesson progress', () => {
     savePracticeData(
       {
@@ -86,6 +103,7 @@ describe('App', () => {
         lastLessonId: 'letter-friends',
         selectedMascotId: 'keyboard-sprite',
         customMascotImage: '',
+        selectedThemeId: 'meadow',
         records: [passedRecord('home-row-1'), passedRecord('home-row-2')],
       },
       localStorage,

@@ -1,5 +1,6 @@
 import type { PracticeRecord } from '../domain/types'
 import type { MascotId } from '../domain/mascot'
+import { getThemeById, type ThemeId } from '../domain/theme'
 
 export const STORAGE_KEY = 'typing-beginner:v1'
 
@@ -8,6 +9,7 @@ export type PracticeData = {
   lastLessonId: string
   selectedMascotId: MascotId
   customMascotImage: string
+  selectedThemeId: ThemeId
   createdAt: string
 }
 
@@ -17,6 +19,7 @@ function createDefaultData(): PracticeData {
     lastLessonId: 'home-row',
     selectedMascotId: 'keyboard-sprite',
     customMascotImage: '',
+    selectedThemeId: 'meadow',
     createdAt: new Date().toISOString(),
   }
 }
@@ -36,6 +39,7 @@ function normalizePracticeData(data: PracticeData): PracticeData {
     lastLessonId: data.lastLessonId,
     selectedMascotId: data.selectedMascotId ?? 'keyboard-sprite',
     customMascotImage: data.customMascotImage ?? '',
+    selectedThemeId: getThemeById(data.selectedThemeId).id,
     createdAt: data.createdAt ?? new Date().toISOString(),
   }
 }

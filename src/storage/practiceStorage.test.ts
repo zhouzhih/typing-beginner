@@ -32,6 +32,7 @@ describe('practiceStorage', () => {
     expect(data.lastLessonId).toBe('home-row')
     expect(data.selectedMascotId).toBe('keyboard-sprite')
     expect(data.customMascotImage).toBe('')
+    expect(data.selectedThemeId).toBe('meadow')
     expect(data.createdAt).toEqual(expect.any(String))
   })
 
@@ -41,6 +42,7 @@ describe('practiceStorage', () => {
       lastLessonId: 'home-row',
       selectedMascotId: 'forest-ranger',
       customMascotImage: 'data:image/png;base64,abc',
+      selectedThemeId: 'space',
       createdAt: '2026-05-23T01:00:00.000Z',
     }
 

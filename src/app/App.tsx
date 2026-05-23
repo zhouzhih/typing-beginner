@@ -5,11 +5,13 @@ import { MascotPanel } from '../components/MascotPanel'
 import { PracticePanel } from '../components/PracticePanel'
 import { ProgressSummary } from '../components/ProgressSummary'
 import { ResultCard } from '../components/ResultCard'
+import { ThemeSelector } from '../components/ThemeSelector'
 import { courses, getAllLessons, getLessonById } from '../data/courses'
 import { getMascotLevel, getUnlockedRewards, type MascotId } from '../domain/mascot'
 import { evaluatePractice } from '../domain/practiceEngine'
 import { getRequiredPasses } from '../domain/progress'
 import { calculateAccuracy, calculateDurationMs, calculateStars, isPassed } from '../domain/stats'
+import type { ThemeId } from '../domain/theme'
 import type { Lesson, PracticeRecord } from '../domain/types'
 import { loadPracticeData, savePracticeData } from '../storage/practiceStorage'
 
@@ -154,8 +156,12 @@ export default function App() {
     updatePracticeData({ ...practiceData, customMascotImage, selectedMascotId: 'custom' })
   }
 
+  function selectTheme(selectedThemeId: ThemeId) {
+    updatePracticeData({ ...practiceData, selectedThemeId })
+  }
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell theme-${practiceData.selectedThemeId}`}>
       <header className="top-bar">
         <div className="brand-mark" aria-hidden="true">
           ⌨
@@ -164,14 +170,20 @@ export default function App() {
           <p className="eyebrow">每天十分钟</p>
           <h1>打字小课堂</h1>
         </div>
-        <MascotPanel
-          customMascotImage={practiceData.customMascotImage}
-          level={mascotLevel}
-          onSelectMascot={selectMascot}
-          onUploadCustomMascot={uploadCustomMascot}
-          rewards={unlockedRewards}
-          selectedMascotId={practiceData.selectedMascotId}
-        />
+        <div className="top-actions">
+          <ThemeSelector
+            onSelectTheme={selectTheme}
+            selectedThemeId={practiceData.selectedThemeId}
+          />
+          <MascotPanel
+            customMascotImage={practiceData.customMascotImage}
+            level={mascotLevel}
+            onSelectMascot={selectMascot}
+            onUploadCustomMascot={uploadCustomMascot}
+            rewards={unlockedRewards}
+            selectedMascotId={practiceData.selectedMascotId}
+          />
+        </div>
       </header>
 
       <div className="main-layout">

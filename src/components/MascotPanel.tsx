@@ -16,6 +16,7 @@ type MascotAvatarProps = Pick<
   MascotPanelProps,
   'customMascotImage' | 'rewards' | 'selectedMascotId'
 > & {
+  celebrating?: boolean
   decorative?: boolean
   size?: 'small' | 'large'
 }
@@ -51,6 +52,7 @@ function AccessoryLayer({ rewards }: { rewards: MascotReward[] }) {
 }
 
 function MascotAvatar({
+  celebrating = false,
   customMascotImage,
   decorative = false,
   rewards,
@@ -59,13 +61,18 @@ function MascotAvatar({
 }: MascotAvatarProps) {
   const selectedMascot =
     selectedMascotId === 'custom' && customMascotImage ? null : getMascotById(selectedMascotId)
-  const imageSrc = customMascotImage && selectedMascotId === 'custom'
-    ? customMascotImage
-    : selectedMascot?.imageSrc ?? getMascotById('keyboard-sprite').imageSrc
+  const imageSrc =
+    customMascotImage && selectedMascotId === 'custom'
+      ? customMascotImage
+      : selectedMascot?.imageSrc ?? getMascotById('keyboard-sprite').imageSrc
   const imageAlt = selectedMascot?.name ? `${selectedMascot.name}头像` : '本机自定义头像'
 
   return (
-    <div className={`mascot-stage ${size === 'small' ? 'mascot-stage-small' : ''}`}>
+    <div
+      className={`mascot-stage ${size === 'small' ? 'mascot-stage-small' : ''} ${
+        celebrating ? 'celebrating' : ''
+      }`}
+    >
       <img
         alt={decorative ? '' : imageAlt}
         aria-hidden={decorative ? 'true' : undefined}
@@ -86,6 +93,7 @@ export function MascotPanel({
   onUploadCustomMascot,
 }: MascotPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [cheerCount, setCheerCount] = useState(0)
 
   async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -146,11 +154,24 @@ export function MascotPanel({
               <strong>Lv.{level}</strong>
             </div>
 
-            <MascotAvatar
-              customMascotImage={customMascotImage}
-              rewards={rewards}
-              selectedMascotId={selectedMascotId}
-            />
+            <button
+              aria-label="和伙伴击掌"
+              className="mascot-play-button"
+              onClick={() => setCheerCount((count) => count + 1)}
+              type="button"
+            >
+              <MascotAvatar
+                celebrating={cheerCount > 0}
+                customMascotImage={customMascotImage}
+                rewards={rewards}
+                selectedMascotId={selectedMascotId}
+              />
+            </button>
+            {cheerCount > 0 ? (
+              <p className="mascot-reaction" role="status">
+                伙伴开心 +{cheerCount}
+              </p>
+            ) : null}
 
             <label className="mascot-field">
               <span>选择打字伙伴</span>
