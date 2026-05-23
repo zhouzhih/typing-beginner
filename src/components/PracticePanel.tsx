@@ -31,7 +31,7 @@ export function PracticePanel({
 
   useEffect(() => {
     if (isPracticing) {
-      inputRef.current?.focus()
+      inputRef.current?.focus({ preventScroll: true })
     }
   }, [isPracticing, prompt])
 

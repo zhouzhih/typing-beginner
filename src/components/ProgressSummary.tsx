@@ -11,7 +11,7 @@ function renderStars(stars: number): string {
 
 export function ProgressSummary({ records }: ProgressSummaryProps) {
   const streak = getPracticeStreak(records)
-  const recentRecords = getRecentRecords(records, 3)
+  const recentRecords = getRecentRecords(records, 2)
   const todayKey = new Date().toISOString().slice(0, 10)
   const todayCount = records.filter((record) => record.completedAt.slice(0, 10) === todayKey).length
 

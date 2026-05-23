@@ -25,9 +25,18 @@ export function ResultCard({ result, saveWarning, unlockHint, onRetry }: ResultC
 
   return (
     <section className="result-card" aria-live="polite">
-      <div className="section-label">本关星星</div>
-      <div className="big-stars">{renderStars(result.stars)}</div>
-      <h2>{result.passed ? '闯关成功！' : '再练一次就更稳了'}</h2>
+      <div className="result-summary">
+        <div>
+          <div className="section-label">本关星星</div>
+          <div className="result-title-row">
+            <div className="big-stars">{renderStars(result.stars)}</div>
+            <h2>{result.passed ? '闯关成功！' : '再练一次就更稳了'}</h2>
+          </div>
+        </div>
+        <button className="secondary-button" onClick={onRetry} type="button">
+          再练一次
+        </button>
+      </div>
       <div className="result-grid">
         <span>准确率 {result.accuracy}%</span>
         <span>小错误 {result.mistakes}</span>
@@ -35,9 +44,6 @@ export function ResultCard({ result, saveWarning, unlockHint, onRetry }: ResultC
       </div>
       <p className="unlock-hint">{unlockHint}</p>
       {saveWarning ? <p className="warning-text">{saveWarning}</p> : null}
-      <button className="secondary-button" onClick={onRetry} type="button">
-        再练一次
-      </button>
     </section>
   )
 }
