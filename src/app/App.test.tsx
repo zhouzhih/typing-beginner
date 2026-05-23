@@ -208,4 +208,42 @@ describe('App', () => {
     expect(screen.getByText('妈妈 爸爸')).toBeInTheDocument()
     expect(screen.getByLabelText('练习内容')).toHaveTextContent('ma ma ba ba')
   })
+
+  test('shows english learning hints for grammar and story typing', () => {
+    savePracticeData(
+      {
+        createdAt: '2026-05-23T00:00:00.000Z',
+        lastLessonId: 'grammar-lines',
+        selectedMascotId: 'keyboard-sprite',
+        customMascotImage: '',
+        selectedThemeId: 'meadow',
+        records: [
+          passedRecord('home-row-1'),
+          passedRecord('home-row-2'),
+          passedRecord('letter-1', 'letter-friends'),
+          passedRecord('letter-2', 'letter-friends'),
+          passedRecord('letter-3', 'letter-friends'),
+          passedRecord('letter-4', 'letter-friends'),
+          passedRecord('words-1', 'tiny-words'),
+          passedRecord('words-2', 'tiny-words'),
+          passedRecord('words-3', 'tiny-words'),
+          passedRecord('words-4', 'tiny-words'),
+          passedRecord('words-5', 'tiny-words'),
+          passedRecord('lines-1', 'short-lines'),
+          passedRecord('lines-2', 'short-lines'),
+          passedRecord('lines-3', 'short-lines'),
+          passedRecord('lines-4', 'short-lines'),
+          passedRecord('lines-5', 'short-lines'),
+          passedRecord('lines-6', 'short-lines'),
+        ],
+      },
+      localStorage,
+    )
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '语法小句' })).toBeInTheDocument()
+    expect(screen.getByText('I am = 我是 / 我很')).toBeInTheDocument()
+    expect(screen.getByLabelText('练习内容')).toHaveTextContent('I am a happy kid.')
+  })
 })

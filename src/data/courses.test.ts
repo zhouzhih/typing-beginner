@@ -35,7 +35,9 @@ describe('courses', () => {
     expect(shortLines?.prompts.length).toBeGreaterThanOrEqual(10)
     expect(shortLines?.prompts.some((prompt) => /[A-Z]/.test(prompt) && /[.!?]/.test(prompt))).toBe(true)
     expect(grammarLines?.prompts.some((prompt) => prompt.startsWith('There is'))).toBe(true)
+    expect(grammarLines?.promptLabels).toContain('There is = 有一个')
     expect(storyTyping?.prompts.some((prompt) => prompt.split('.').length > 2)).toBe(true)
+    expect(storyTyping?.promptLabels?.[0]).toBe('我有一张小书桌。我的书在上面。')
   })
 
   test('adds pinyin lessons with chinese display labels', () => {
