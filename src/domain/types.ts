@@ -21,6 +21,8 @@ export type Lesson = {
   title: string
   level: number
   kind: LessonKind
+  studyTip?: string
+  promptLabels?: string[]
   prompts: string[]
   unlockAfter?: string
   requiredPasses?: number
@@ -43,6 +45,7 @@ export type PracticeRecord = {
   durationMs: number
   totalChars: number
   mistakes: number
+  mistakeKeys?: string[]
   accuracy: number
   stars: 1 | 2 | 3
   passed: boolean

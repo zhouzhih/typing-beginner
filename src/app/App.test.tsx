@@ -1,11 +1,14 @@
 import '@testing-library/jest-dom/vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import App from './App'
 import type { PracticeRecord } from '../domain/types'
 import { loadPracticeData, savePracticeData } from '../storage/practiceStorage'
+
+const originalCreateObjectURL = URL.createObjectURL
+const originalRevokeObjectURL = URL.revokeObjectURL
 
 function passedRecord(id: string, lessonId = 'home-row'): PracticeRecord {
   return {
@@ -26,6 +29,18 @@ function passedRecord(id: string, lessonId = 'home-row'): PracticeRecord {
 describe('App', () => {
   beforeEach(() => {
     localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: originalCreateObjectURL,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: originalRevokeObjectURL,
+    })
   })
 
   test('lets a beginner complete the first typing lesson and saves history', async () => {
@@ -72,7 +87,38 @@ describe('App', () => {
     const data = loadPracticeData(localStorage)
     expect(data.records).toHaveLength(1)
     expect(data.records[0].mistakes).toBe(1)
+    expect(data.records[0].mistakeKeys).toEqual(['a'])
     expect(data.records[0].accuracy).toBe(89)
+    expect(within(screen.getByRole('region', { name: '错题小本' })).getByText('a')).toBeInTheDocument()
+  })
+
+  test('exports saved practice results as a csv file', async () => {
+    const user = userEvent.setup()
+    const createObjectURL = vi.fn(() => 'blob:typing-report')
+    const revokeObjectURL = vi.fn()
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectURL,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectURL,
+    })
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(screen.getByLabelText('打字输入框'), 'asdf jkl;')
+    await user.click(await screen.findByRole('button', { name: '导出成绩' }))
+
+    const reportBlob = createObjectURL.mock.calls[0][0] as Blob
+
+    expect(reportBlob.type).toBe('text/csv;charset=utf-8')
+    await expect(reportBlob.text()).resolves.toContain('手指的家,asdf jkl;,100%,0')
+    expect(anchorClick).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:typing-report')
   })
 
   test('focuses the typing input when practice starts', async () => {
@@ -149,5 +195,17 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: '字母朋友' })).toBeInTheDocument()
     expect(screen.getByText('第 1 / 12 题')).toBeInTheDocument()
     expect(screen.getByLabelText('练习内容').textContent?.replace(/\s/g, '').length).toBeGreaterThanOrEqual(16)
+  })
+
+  test('lets a child practice pinyin from chinese labels', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '1 拼音入门 可练习' }))
+
+    expect(screen.getByRole('heading', { name: '拼音入门' })).toBeInTheDocument()
+    expect(screen.getByText('妈妈 爸爸')).toBeInTheDocument()
+    expect(screen.getByLabelText('练习内容')).toHaveTextContent('ma ma ba ba')
   })
 })

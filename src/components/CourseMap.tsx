@@ -37,6 +37,7 @@ export function CourseMap({
 
                   return (
                     <button
+                      aria-label={`${lesson.level} ${lesson.title} ${unlocked ? '可练习' : '再加油'}`}
                       className={`lesson-button ${selected ? 'selected' : ''}`}
                       disabled={!unlocked}
                       key={lesson.id}

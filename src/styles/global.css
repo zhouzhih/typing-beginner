@@ -563,6 +563,18 @@ h2 {
   font-size: 16px;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.export-button {
+  background: var(--blue);
+  box-shadow: 0 5px 0 #1d4ed8;
+}
+
 .prompt-box {
   min-height: 100px;
   border: 2px dashed #93c5fd;
@@ -572,6 +584,16 @@ h2 {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 34px;
   line-height: 1.42;
+}
+
+.prompt-label {
+  margin-bottom: 8px;
+  color: #9a3412;
+  font-family:
+    Inter, ui-rounded, 'SF Pro Rounded', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui,
+    sans-serif;
+  font-size: 24px;
+  font-weight: 900;
 }
 
 .prompt-char {
@@ -754,6 +776,95 @@ h2 {
   background: #eff6ff;
 }
 
+.keyboard-tips-card {
+  border-color: #a7f3d0;
+  background: #f0fdf4;
+}
+
+.mistake-bank-card {
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.mistake-key-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mistake-key-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 6px 9px;
+}
+
+.mistake-key-list span {
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 900;
+}
+
+.mistake-key-list strong {
+  color: #9f1239;
+  font-size: 13px;
+}
+
+.keyboard-tip-list {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.keyboard-tip-list li {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: start;
+  gap: 9px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 9px;
+}
+
+.keycap {
+  display: inline-grid;
+  width: 100%;
+  min-height: 32px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: inset 0 -3px 0 rgba(15, 23, 42, 0.16);
+}
+
+.keyboard-tip-list strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.keyboard-tip-list p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .course-map {
   border-color: #fdba74;
   background: #fff7ed;
@@ -920,6 +1031,8 @@ h2 {
 
 .theme-space .lesson-button:not(.selected):not(:disabled),
 .theme-space .recent-list li,
+.theme-space .mistake-key-list li,
+.theme-space .keyboard-tip-list li,
 .theme-space .coming-soon-panel,
 .theme-space .unlock-hint {
   background: #1e293b;
@@ -978,6 +1091,10 @@ h2 {
 
   .result-grid {
     grid-template-columns: 1fr;
+  }
+
+  .result-actions {
+    justify-content: flex-start;
   }
 
   .live-feedback {
