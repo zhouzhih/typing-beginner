@@ -8,6 +8,7 @@ type PracticePanelProps = {
   input: string
   evaluation: PracticeEvaluation
   isPracticing: boolean
+  mistakeCount: number
   promptIndex: number
   promptTotal: number
   onStart: () => void
@@ -20,6 +21,7 @@ export function PracticePanel({
   input,
   evaluation,
   isPracticing,
+  mistakeCount,
   promptIndex,
   promptTotal,
   onStart,
@@ -76,7 +78,7 @@ export function PracticePanel({
         </div>
         <div>
           <span>小错误</span>
-          <strong>{evaluation.mistakes}</strong>
+          <strong>{mistakeCount}</strong>
         </div>
       </div>
     </main>

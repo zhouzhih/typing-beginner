@@ -305,6 +305,7 @@ h2 {
 
 .mascot-close {
   position: absolute;
+  z-index: 10;
   top: 10px;
   right: 10px;
   width: 34px;

@@ -50,6 +50,31 @@ describe('App', () => {
     expect(data.records[0].passed).toBe(true)
   })
 
+  test('keeps mistakes after a child deletes and corrects the input', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    const input = screen.getByLabelText('打字输入框')
+    const mistakeFeedback = screen.getByText('小错误').closest('div')
+
+    expect(mistakeFeedback).not.toBeNull()
+
+    await user.type(input, 'x')
+    expect(mistakeFeedback).toHaveTextContent('小错误1')
+
+    await user.keyboard('{Backspace}')
+    expect(mistakeFeedback).toHaveTextContent('小错误1')
+
+    await user.type(input, 'asdf jkl;')
+
+    const data = loadPracticeData(localStorage)
+    expect(data.records).toHaveLength(1)
+    expect(data.records[0].mistakes).toBe(1)
+    expect(data.records[0].accuracy).toBe(89)
+  })
+
   test('opens the compact typing buddy panel and keeps custom avatars local', async () => {
     const user = userEvent.setup()
 

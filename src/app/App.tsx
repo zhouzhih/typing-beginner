@@ -55,6 +55,14 @@ function getUnlockHint(lesson: Lesson, records: PracticeRecord[]): string {
   return `再通过 ${remaining} 次，就能解锁「${nextLesson.title}」`
 }
 
+function countAddedMistakes(prompt: string, previousInput: string, nextInput: string): number {
+  return Array.from(nextInput).filter((actual, index) => {
+    const previous = previousInput[index]
+
+    return actual !== previous && actual !== prompt[index]
+  }).length
+}
+
 export default function App() {
   const [practiceData, setPracticeData] = useState(() => loadPracticeData())
   const [selectedLessonId, setSelectedLessonId] = useState(() =>
@@ -66,6 +74,7 @@ export default function App() {
   const [activePrompt, setActivePrompt] = useState('')
   const [activePromptIndex, setActivePromptIndex] = useState(0)
   const [result, setResult] = useState<PracticeRecord | null>(null)
+  const [sessionMistakes, setSessionMistakes] = useState(0)
   const [saveWarning, setSaveWarning] = useState('')
 
   const selectedLesson = getLessonById(selectedLessonId) ?? getAllLessons()[0]
@@ -94,6 +103,7 @@ export default function App() {
   function startPractice() {
     setInput('')
     setResult(null)
+    setSessionMistakes(0)
     setSaveWarning('')
     setActivePrompt(nextPrompt)
     setActivePromptIndex(nextPromptIndex)
@@ -105,16 +115,17 @@ export default function App() {
     setSelectedLessonId(lesson.id)
     setInput('')
     setResult(null)
+    setSessionMistakes(0)
     setSaveWarning('')
     setActivePrompt('')
     setActivePromptIndex(0)
     setIsPracticing(false)
   }
 
-  function completePractice(nextInput: string) {
+  function completePractice(nextInput: string, mistakeCount: number) {
     const completedAt = new Date().toISOString()
     const nextEvaluation = evaluatePractice(prompt, nextInput)
-    const accuracy = calculateAccuracy(prompt.length, nextEvaluation.mistakes)
+    const accuracy = calculateAccuracy(prompt.length, mistakeCount)
     const record: PracticeRecord = {
       id: createRecordId(),
       lessonId: selectedLesson.id,
@@ -123,7 +134,7 @@ export default function App() {
       completedAt,
       durationMs: calculateDurationMs(startedAt || completedAt, completedAt),
       totalChars: prompt.length,
-      mistakes: nextEvaluation.mistakes,
+      mistakes: mistakeCount,
       accuracy,
       stars: calculateStars(accuracy),
       passed: isPassed(accuracy, nextEvaluation.isComplete),
@@ -141,10 +152,14 @@ export default function App() {
 
   function handleInputChange(nextInput: string) {
     const trimmedInput = nextInput.slice(0, prompt.length)
+    const nextSessionMistakes =
+      sessionMistakes + countAddedMistakes(prompt, input, trimmedInput)
+
     setInput(trimmedInput)
+    setSessionMistakes(nextSessionMistakes)
 
     if (trimmedInput.length >= prompt.length) {
-      completePractice(trimmedInput)
+      completePractice(trimmedInput, nextSessionMistakes)
     }
   }
 
@@ -193,6 +208,7 @@ export default function App() {
             input={input}
             isPracticing={isPracticing}
             lesson={selectedLesson}
+            mistakeCount={sessionMistakes}
             onInputChange={handleInputChange}
             onStart={startPractice}
             promptIndex={promptIndex}
