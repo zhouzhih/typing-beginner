@@ -1,10 +1,10 @@
-# 打字小课堂
+# 打字小课堂 KeySprout
 
 [![CI](https://github.com/zhouzhih/typing-beginner/actions/workflows/ci.yml/badge.svg)](https://github.com/zhouzhih/typing-beginner/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/zhouzhih/typing-beginner/actions/workflows/codeql.yml/badge.svg)](https://github.com/zhouzhih/typing-beginner/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-面向小学生打字初学者的卡通打字练习软件。项目提供网页版本和 macOS App 打包方式，练习记录默认保存在本机。
+面向小学生打字初学者的卡通打字练习软件。英文名建议使用 **KeySprout**，含义是“小朋友像幼芽一样从键盘基础慢慢成长”。项目提供网页版本和 macOS App 打包方式，练习记录默认保存在本机。
 
 <p>
   <img src="src-tauri/icons/128x128.png" alt="打字小课堂图标" width="96" height="96" />
@@ -12,10 +12,14 @@
 
 ## 功能
 
-- 循序渐进课程：从主键位、字母组合、小单词到短句。
+- 循序渐进课程：从主键位、字母组合、小单词到短句、语法句和小短文。
+- 英语学习提示：语法句显示句型说明，小短文显示中文意思，打字时顺手学英语。
+- 中文拼音课程：看中文词语和成语，输入对应拼音。
 - 练习反馈：实时高亮当前字符、正确字符和错误字符。
-- 练习记录：保存准确率、星星、连续练习和关卡解锁进度。
+- 练习记录：保存准确率、星星、连续练习和关卡解锁进度，支持导出 CSV 成绩。
+- 错题库：统计经常打错的键，方便针对性复习。
 - 儿童友好界面：大按钮、大输入框、卡通伙伴和可切换主题。
+- 键盘小知识：在练习旁边展示 Shift、Backspace、空格等基础按键提示。
 - 本机优先：自定义头像和练习历史仅保存在本机。
 - macOS App：使用 Tauri 构建 `.app`，支持本机离线练习。
 

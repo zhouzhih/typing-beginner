@@ -4,6 +4,7 @@ type ResultCardProps = {
   result: PracticeRecord | null
   saveWarning: string
   unlockHint: string
+  onExportResults: () => void
   onRetry: () => void
 }
 
@@ -11,7 +12,13 @@ function renderStars(stars: number): string {
   return '★'.repeat(stars) + '☆'.repeat(3 - stars)
 }
 
-export function ResultCard({ result, saveWarning, unlockHint, onRetry }: ResultCardProps) {
+export function ResultCard({
+  result,
+  saveWarning,
+  unlockHint,
+  onExportResults,
+  onRetry,
+}: ResultCardProps) {
   if (!result) {
     return (
       <section className="result-card waiting-result">
@@ -33,9 +40,14 @@ export function ResultCard({ result, saveWarning, unlockHint, onRetry }: ResultC
             <h2>{result.passed ? '闯关成功！' : '再练一次就更稳了'}</h2>
           </div>
         </div>
-        <button className="secondary-button" onClick={onRetry} type="button">
-          再练一次
-        </button>
+        <div className="result-actions">
+          <button className="secondary-button export-button" onClick={onExportResults} type="button">
+            导出成绩
+          </button>
+          <button className="secondary-button" onClick={onRetry} type="button">
+            再练一次
+          </button>
+        </div>
       </div>
       <div className="result-grid">
         <span>准确率 {result.accuracy}%</span>

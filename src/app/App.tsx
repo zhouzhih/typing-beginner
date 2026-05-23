@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 
 import { CourseMap } from '../components/CourseMap'
+import { KeyboardTips } from '../components/KeyboardTips'
 import { MascotPanel } from '../components/MascotPanel'
+import { MistakeBank } from '../components/MistakeBank'
 import { PracticePanel } from '../components/PracticePanel'
 import { ProgressSummary } from '../components/ProgressSummary'
 import { ResultCard } from '../components/ResultCard'
@@ -10,6 +12,7 @@ import { courses, getAllLessons, getLessonById } from '../data/courses'
 import { getMascotLevel, getUnlockedRewards, type MascotId } from '../domain/mascot'
 import { evaluatePractice } from '../domain/practiceEngine'
 import { getRequiredPasses } from '../domain/progress'
+import { buildPracticeReportCsv } from '../domain/report'
 import { calculateAccuracy, calculateDurationMs, calculateStars, isPassed } from '../domain/stats'
 import type { ThemeId } from '../domain/theme'
 import type { Lesson, PracticeRecord } from '../domain/types'
@@ -21,6 +24,10 @@ function createRecordId(): string {
 
 function getPromptForLesson(lesson: Lesson, completedCount: number): string {
   return lesson.prompts[completedCount % lesson.prompts.length] ?? ''
+}
+
+function getPromptLabelForLesson(lesson: Lesson, completedCount: number): string {
+  return lesson.promptLabels?.[completedCount % lesson.prompts.length] ?? ''
 }
 
 function getInitialLessonId(savedLessonId: string): string {
@@ -55,12 +62,25 @@ function getUnlockHint(lesson: Lesson, records: PracticeRecord[]): string {
   return `再通过 ${remaining} 次，就能解锁「${nextLesson.title}」`
 }
 
-function countAddedMistakes(prompt: string, previousInput: string, nextInput: string): number {
-  return Array.from(nextInput).filter((actual, index) => {
+function getAddedMistakeKeys(prompt: string, previousInput: string, nextInput: string): string[] {
+  return Array.from(nextInput).flatMap((actual, index) => {
     const previous = previousInput[index]
 
-    return actual !== previous && actual !== prompt[index]
-  }).length
+    return actual !== previous && actual !== prompt[index] ? [prompt[index]] : []
+  })
+}
+
+function downloadTextFile(fileName: string, content: string, type: string) {
+  const blob = new Blob([content], { type })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = fileName
+  document.body.append(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
 }
 
 export default function App() {
@@ -75,6 +95,7 @@ export default function App() {
   const [activePromptIndex, setActivePromptIndex] = useState(0)
   const [result, setResult] = useState<PracticeRecord | null>(null)
   const [sessionMistakes, setSessionMistakes] = useState(0)
+  const [sessionMistakeKeys, setSessionMistakeKeys] = useState<string[]>([])
   const [saveWarning, setSaveWarning] = useState('')
 
   const selectedLesson = getLessonById(selectedLessonId) ?? getAllLessons()[0]
@@ -85,8 +106,15 @@ export default function App() {
     () => getPromptForLesson(selectedLesson, completedCount),
     [completedCount, selectedLesson],
   )
+  const nextPromptLabel = useMemo(
+    () => getPromptLabelForLesson(selectedLesson, completedCount),
+    [completedCount, selectedLesson],
+  )
   const nextPromptIndex = (completedCount % selectedLesson.prompts.length) + 1
   const prompt = activePrompt || nextPrompt
+  const promptLabel = activePrompt
+    ? getPromptLabelForLesson(selectedLesson, activePromptIndex - 1)
+    : nextPromptLabel
   const promptIndex = activePromptIndex || nextPromptIndex
   const evaluation = evaluatePractice(prompt, input)
   const unlockHint = getUnlockHint(selectedLesson, practiceData.records)
@@ -104,6 +132,7 @@ export default function App() {
     setInput('')
     setResult(null)
     setSessionMistakes(0)
+    setSessionMistakeKeys([])
     setSaveWarning('')
     setActivePrompt(nextPrompt)
     setActivePromptIndex(nextPromptIndex)
@@ -116,13 +145,14 @@ export default function App() {
     setInput('')
     setResult(null)
     setSessionMistakes(0)
+    setSessionMistakeKeys([])
     setSaveWarning('')
     setActivePrompt('')
     setActivePromptIndex(0)
     setIsPracticing(false)
   }
 
-  function completePractice(nextInput: string, mistakeCount: number) {
+  function completePractice(nextInput: string, mistakeCount: number, mistakeKeys: string[]) {
     const completedAt = new Date().toISOString()
     const nextEvaluation = evaluatePractice(prompt, nextInput)
     const accuracy = calculateAccuracy(prompt.length, mistakeCount)
@@ -135,6 +165,7 @@ export default function App() {
       durationMs: calculateDurationMs(startedAt || completedAt, completedAt),
       totalChars: prompt.length,
       mistakes: mistakeCount,
+      mistakeKeys,
       accuracy,
       stars: calculateStars(accuracy),
       passed: isPassed(accuracy, nextEvaluation.isComplete),
@@ -152,14 +183,16 @@ export default function App() {
 
   function handleInputChange(nextInput: string) {
     const trimmedInput = nextInput.slice(0, prompt.length)
-    const nextSessionMistakes =
-      sessionMistakes + countAddedMistakes(prompt, input, trimmedInput)
+    const addedMistakeKeys = getAddedMistakeKeys(prompt, input, trimmedInput)
+    const nextSessionMistakeKeys = [...sessionMistakeKeys, ...addedMistakeKeys]
+    const nextSessionMistakes = nextSessionMistakeKeys.length
 
     setInput(trimmedInput)
     setSessionMistakes(nextSessionMistakes)
+    setSessionMistakeKeys(nextSessionMistakeKeys)
 
     if (trimmedInput.length >= prompt.length) {
-      completePractice(trimmedInput, nextSessionMistakes)
+      completePractice(trimmedInput, nextSessionMistakes, nextSessionMistakeKeys)
     }
   }
 
@@ -173,6 +206,13 @@ export default function App() {
 
   function selectTheme(selectedThemeId: ThemeId) {
     updatePracticeData({ ...practiceData, selectedThemeId })
+  }
+
+  function exportResults() {
+    const csv = buildPracticeReportCsv(practiceData.records, getAllLessons())
+    const today = new Date().toISOString().slice(0, 10)
+
+    downloadTextFile(`typing-report-${today}.csv`, csv, 'text/csv;charset=utf-8')
   }
 
   return (
@@ -214,11 +254,13 @@ export default function App() {
             promptIndex={promptIndex}
             promptTotal={selectedLesson.prompts.length}
             prompt={prompt}
+            promptLabel={promptLabel}
           />
           <ResultCard
             result={result}
             saveWarning={saveWarning}
             unlockHint={unlockHint}
+            onExportResults={exportResults}
             onRetry={startPractice}
           />
         </section>
@@ -231,6 +273,8 @@ export default function App() {
             records={practiceData.records}
             selectedLessonId={selectedLesson.id}
           />
+          <MistakeBank records={practiceData.records} />
+          <KeyboardTips />
         </div>
       </div>
     </div>

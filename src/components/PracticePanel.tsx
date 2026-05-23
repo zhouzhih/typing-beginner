@@ -5,6 +5,7 @@ import type { Lesson, PracticeEvaluation } from '../domain/types'
 type PracticePanelProps = {
   lesson: Lesson
   prompt: string
+  promptLabel: string
   input: string
   evaluation: PracticeEvaluation
   isPracticing: boolean
@@ -18,6 +19,7 @@ type PracticePanelProps = {
 export function PracticePanel({
   lesson,
   prompt,
+  promptLabel,
   input,
   evaluation,
   isPracticing,
@@ -45,7 +47,7 @@ export function PracticePanel({
         <div>
           <div className="section-label">今日任务</div>
           <h2>{lesson.title}</h2>
-          <p>{isPracticing ? '跟着彩色小火车输入' : '准备好就开始今天的练习'}</p>
+          <p>{isPracticing ? '跟着彩色小火车输入' : lesson.studyTip || '准备好就开始今天的练习'}</p>
           <p className="prompt-meta">
             第 {promptIndex} / {promptTotal} 题
           </p>
@@ -56,6 +58,7 @@ export function PracticePanel({
       </div>
 
       <div className="prompt-box" aria-label="练习内容">
+        {promptLabel ? <div className="prompt-label">{promptLabel}</div> : null}
         {evaluation.characters.map((character, index) => (
           <span className={`prompt-char ${character.status}`} key={`${character.expected}-${index}`}>
             {character.expected === ' ' ? '\u00A0' : character.expected}
