@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Pixel hero mascot">
+  <ellipse cx="80" cy="144" rx="49" ry="8" fill="#0f172a" opacity=".14"/>
+  <path fill="#1d4ed8" d="M38 31h84v18h14v70h-14v18H38v-18H24V49h14z"/>
+  <path fill="#bfdbfe" d="M48 49h64v70H48z"/>
+  <path fill="#60a5fa" d="M48 49h64v19H48z"/>
+  <path fill="#0f172a" d="M58 76h12v18H58zm33 0h12v18H91z"/>
+  <path fill="#1d4ed8" d="M68 105h24v9H68z"/>
+  <path fill="#facc15" d="M121 69h19v48h-19z"/>
+  <path fill="#fef3c7" d="M126 77h9v30h-9z"/>
+  <path fill="#1e293b" d="M33 119h18v18H33zm76 0h18v18h-18z"/>
+  <path fill="#93c5fd" d="M31 37h18v12H31zm80 0h18v12h-18z"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Round party bean mascot">
+  <defs>
+    <linearGradient id="bean" x1="44" x2="117" y1="21" y2="139" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="81" cy="143" rx="48" ry="9" fill="#0f172a" opacity=".14"/>
+  <path fill="#fde68a" stroke="#f97316" stroke-width="7" d="M127 83c0 35-20 58-48 58S30 118 30 83s21-64 49-64 48 29 48 64Z"/>
+  <path fill="url(#bean)" d="M116 83c0 29-15 47-37 47S42 112 42 83s16-52 37-52 37 23 37 52Z"/>
+  <path fill="#60a5fa" stroke="#1d4ed8" stroke-linejoin="round" stroke-width="5" d="m75 12 28 23-52 9z"/>
+  <circle cx="60" cy="80" r="7" fill="#0f172a"/>
+  <circle cx="99" cy="80" r="7" fill="#0f172a"/>
+  <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-width="5" d="M69 98c6 7 16 7 22 0"/>
+  <path fill="#fff7ed" d="m118 47 7 13 14 2-10 10 2 14-13-7-13 7 3-14-11-10 15-2z"/>
+  <path fill="none" stroke="#f97316" stroke-linecap="round" stroke-width="5" d="M39 56c-13 0-20-7-20-18"/>
+</svg>

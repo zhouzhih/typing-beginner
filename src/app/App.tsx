@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 
 import { CourseMap } from '../components/CourseMap'
+import { MascotPanel } from '../components/MascotPanel'
 import { PracticePanel } from '../components/PracticePanel'
 import { ProgressSummary } from '../components/ProgressSummary'
 import { ResultCard } from '../components/ResultCard'
 import { courses, getAllLessons, getLessonById } from '../data/courses'
+import { getMascotLevel, getUnlockedRewards, type MascotId } from '../domain/mascot'
 import { evaluatePractice } from '../domain/practiceEngine'
 import { getRequiredPasses } from '../domain/progress'
 import { calculateAccuracy, calculateDurationMs, calculateStars, isPassed } from '../domain/stats'
@@ -77,6 +79,15 @@ export default function App() {
   const promptIndex = activePromptIndex || nextPromptIndex
   const evaluation = evaluatePractice(prompt, input)
   const unlockHint = getUnlockHint(selectedLesson, practiceData.records)
+  const mascotLevel = getMascotLevel(practiceData.records)
+  const unlockedRewards = getUnlockedRewards(practiceData.records)
+
+  function updatePracticeData(nextData: typeof practiceData) {
+    const saveResult = savePracticeData(nextData)
+
+    setPracticeData(nextData)
+    setSaveWarning(saveResult.ok ? '' : '本次记录没有保存，请稍后再试。')
+  }
 
   function startPractice() {
     setInput('')
@@ -120,12 +131,10 @@ export default function App() {
       records: [...practiceData.records, record],
       lastLessonId: selectedLesson.id,
     }
-    const saveResult = savePracticeData(nextData)
 
-    setPracticeData(nextData)
+    updatePracticeData(nextData)
     setResult(record)
     setIsPracticing(false)
-    setSaveWarning(saveResult.ok ? '' : '本次记录没有保存，请稍后再试。')
   }
 
   function handleInputChange(nextInput: string) {
@@ -135,6 +144,14 @@ export default function App() {
     if (trimmedInput.length >= prompt.length) {
       completePractice(trimmedInput)
     }
+  }
+
+  function selectMascot(selectedMascotId: MascotId) {
+    updatePracticeData({ ...practiceData, selectedMascotId })
+  }
+
+  function uploadCustomMascot(customMascotImage: string) {
+    updatePracticeData({ ...practiceData, customMascotImage, selectedMascotId: 'custom' })
   }
 
   return (
@@ -147,7 +164,14 @@ export default function App() {
           <p className="eyebrow">每天十分钟</p>
           <h1>打字小课堂</h1>
         </div>
-        <div className="top-pill">小学生模式</div>
+        <MascotPanel
+          customMascotImage={practiceData.customMascotImage}
+          level={mascotLevel}
+          onSelectMascot={selectMascot}
+          onUploadCustomMascot={uploadCustomMascot}
+          rewards={unlockedRewards}
+          selectedMascotId={practiceData.selectedMascotId}
+        />
       </header>
 
       <div className="main-layout">

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Red crafter mascot">
+  <defs>
+    <linearGradient id="face" x1="45" x2="112" y1="46" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fed7aa"/>
+      <stop offset="1" stop-color="#fb7185"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="80" cy="143" rx="48" ry="9" fill="#0f172a" opacity=".14"/>
+  <path fill="#dc2626" stroke="#7f1d1d" stroke-linejoin="round" stroke-width="7" d="M37 54c5-25 23-38 43-38s38 13 43 38H37Z"/>
+  <rect width="84" height="88" x="38" y="48" fill="url(#face)" stroke="#7f1d1d" stroke-width="7" rx="30"/>
+  <path fill="#fecaca" d="M43 50h75c-7 15-21 22-39 22-16 0-28-7-36-22Z"/>
+  <circle cx="61" cy="84" r="7" fill="#0f172a"/>
+  <circle cx="99" cy="84" r="7" fill="#0f172a"/>
+  <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-width="5" d="M68 101c7 6 17 6 24 0"/>
+  <rect width="46" height="28" x="57" y="108" fill="#2563eb" rx="10"/>
+  <path fill="none" stroke="#facc15" stroke-linecap="round" stroke-width="5" d="M63 109V95m34 14V95"/>
+  <path fill="#f8fafc" stroke="#334155" stroke-linejoin="round" stroke-width="5" d="M119 101 139 81l8 8-20 20 4 12-12-4-18 18-8-8 18-18z"/>
+</svg>

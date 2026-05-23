@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 
 import { loadPracticeData, savePracticeData, STORAGE_KEY } from './practiceStorage'
+import type { PracticeData } from './practiceStorage'
 import type { PracticeRecord } from '../domain/types'
 
 function record(): PracticeRecord {
@@ -29,13 +30,17 @@ describe('practiceStorage', () => {
 
     expect(data.records).toEqual([])
     expect(data.lastLessonId).toBe('home-row')
+    expect(data.selectedMascotId).toBe('keyboard-sprite')
+    expect(data.customMascotImage).toBe('')
     expect(data.createdAt).toEqual(expect.any(String))
   })
 
   test('saves and loads practice data', () => {
-    const data = {
+    const data: PracticeData = {
       records: [record()],
       lastLessonId: 'home-row',
+      selectedMascotId: 'forest-ranger',
+      customMascotImage: 'data:image/png;base64,abc',
       createdAt: '2026-05-23T01:00:00.000Z',
     }
 

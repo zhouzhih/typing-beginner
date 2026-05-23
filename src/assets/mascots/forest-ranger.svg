@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Forest ranger mascot">
+  <defs>
+    <linearGradient id="hood" x1="32" x2="130" y1="18" y2="139" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#bbf7d0"/>
+      <stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="80" cy="144" rx="47" ry="9" fill="#0f172a" opacity=".14"/>
+  <path fill="url(#hood)" stroke="#15803d" stroke-linejoin="round" stroke-width="7" d="M79 18c25 10 45 31 48 62 4 38-14 60-48 60S27 118 31 80c3-31 23-52 48-62Z"/>
+  <path fill="#fef3c7" d="M52 75c0-18 12-31 28-31s28 13 28 31v22c0 17-11 28-28 28S52 114 52 97V75Z"/>
+  <path fill="#15803d" d="M45 65c12-26 55-26 70 0-11-7-25-10-35-10s-24 3-35 10Z"/>
+  <circle cx="64" cy="84" r="7" fill="#0f172a"/>
+  <circle cx="96" cy="84" r="7" fill="#0f172a"/>
+  <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-width="5" d="M70 101c6 5 15 5 21 0"/>
+  <path fill="#84cc16" stroke="#15803d" stroke-linejoin="round" stroke-width="5" d="M106 27c15-4 25 3 29 17-17 2-26-4-29-17Z"/>
+  <path fill="#92400e" d="M34 95h17v39H34z"/>
+  <path fill="#fbbf24" d="M39 104h7v20h-7z"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Keyboard sprite mascot">
+  <defs>
+    <linearGradient id="body" x1="38" x2="126" y1="22" y2="139" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#bbf7d0"/>
+      <stop offset="1" stop-color="#4ade80"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="80" cy="142" rx="48" ry="9" fill="#0f172a" opacity=".14"/>
+  <path fill="#86efac" stroke="#2563eb" stroke-linecap="round" stroke-linejoin="round" stroke-width="7" d="M44 28c8-12 24-9 30 4 6-13 22-16 31-4 20 2 34 18 34 40v30c0 27-19 44-59 44S21 125 21 98V68c0-22 13-38 23-40Z"/>
+  <path fill="url(#body)" d="M33 67c0-17 13-28 29-28h36c17 0 29 12 29 29v29c0 20-14 31-47 31S33 117 33 97V67Z"/>
+  <circle cx="58" cy="77" r="8" fill="#0f172a"/>
+  <circle cx="102" cy="77" r="8" fill="#0f172a"/>
+  <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-width="5" d="M69 94c5 5 17 5 22 0"/>
+  <rect width="55" height="27" x="52" y="105" fill="#fff" rx="10"/>
+  <path fill="#2563eb" d="M63 114h8v7h-8zm12 0h8v7h-8zm12 0h8v7h-8zm-18 10h24v5H69z"/>
+</svg>

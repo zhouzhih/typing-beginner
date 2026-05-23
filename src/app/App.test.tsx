@@ -50,11 +50,42 @@ describe('App', () => {
     expect(data.records[0].passed).toBe(true)
   })
 
+  test('opens the compact typing buddy panel and keeps custom avatars local', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: '打开打字伙伴' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('选择打字伙伴')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '打开打字伙伴' }))
+
+    expect(screen.getByRole('dialog', { name: '打字伙伴' })).toBeInTheDocument()
+    expect(screen.getByLabelText('选择打字伙伴')).toHaveValue('keyboard-sprite')
+    expect(screen.getByAltText('键盘小精灵头像')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('选择打字伙伴'), 'forest-ranger')
+    expect(loadPracticeData(localStorage).selectedMascotId).toBe('forest-ranger')
+    expect(screen.getByAltText('森林小游侠头像')).toBeInTheDocument()
+
+    const upload = new File(['avatar'], 'avatar.png', { type: 'image/png' })
+    await user.upload(screen.getByLabelText('上传本机头像'), upload)
+
+    expect(loadPracticeData(localStorage).customMascotImage).toMatch(/^data:image\/png;base64,/)
+    expect(screen.getByText('自定义头像只保存在本机')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '关闭打字伙伴' }))
+
+    expect(screen.queryByRole('dialog', { name: '打字伙伴' })).not.toBeInTheDocument()
+  })
+
   test('shows a longer letter-friends prompt and lesson progress', () => {
     savePracticeData(
       {
         createdAt: '2026-05-23T00:00:00.000Z',
         lastLessonId: 'letter-friends',
+        selectedMascotId: 'keyboard-sprite',
+        customMascotImage: '',
         records: [passedRecord('home-row-1'), passedRecord('home-row-2')],
       },
       localStorage,
