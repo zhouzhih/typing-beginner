@@ -80,12 +80,15 @@ describe('App', () => {
     const mistakeFeedback = screen.getByText('小错误').closest('div')
 
     expect(mistakeFeedback).not.toBeNull()
+    const promptChars = () => screen.getByLabelText('练习内容').querySelectorAll('span')
 
     await user.type(input, 'x')
     expect(mistakeFeedback).toHaveTextContent('小错误1')
+    expect(promptChars()[0]).toHaveClass('incorrect')
 
     await user.keyboard('{Backspace}')
     expect(mistakeFeedback).toHaveTextContent('小错误1')
+    expect(promptChars()[0]).toHaveClass('mistake-latched')
 
     await user.type(input, 'asdf jkl;')
 
@@ -263,5 +266,33 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: '语法小句' })).toBeInTheDocument()
     expect(screen.getByText('I am = 我是 / 我很')).toBeInTheDocument()
     expect(screen.getByLabelText('练习内容')).toHaveTextContent('I am a happy kid.')
+  })
+
+  test('shows a level-up burst feedback when mascot reaches a new level', async () => {
+    const user = userEvent.setup()
+
+    savePracticeData(
+      {
+        createdAt: '2026-05-23T00:00:00.000Z',
+        lastLessonId: 'home-row',
+        selectedMascotId: 'keyboard-sprite',
+        customMascotImage: '',
+        selectedThemeId: 'meadow',
+        coinBalance: 0,
+        mascotXp: 59,
+        ownedRewardIds: [],
+        equippedRewardIds: [],
+        records: [],
+      },
+      localStorage,
+    )
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(screen.getByLabelText('打字输入框'), 'asdf jkl;')
+
+    expect(await screen.findByText('升级到 Lv.2')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '打开打字伙伴' })).toHaveTextContent('Lv.2')
   })
 })

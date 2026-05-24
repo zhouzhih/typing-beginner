@@ -16,6 +16,7 @@ describe('MascotPanel', () => {
         coinBalance={45}
         customMascotImage=""
         equippedRewardIds={[]}
+        levelUpFlash={null}
         level={2}
         onBuyReward={onBuyReward}
         onSelectMascot={vi.fn()}

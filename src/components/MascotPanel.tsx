@@ -12,6 +12,7 @@ import {
 type MascotPanelProps = {
   selectedMascotId: MascotId
   customMascotImage: string
+  levelUpFlash: { from: number; to: number; id: number } | null
   level: number
   coinBalance: number
   ownedRewardIds: RewardId[]
@@ -27,7 +28,9 @@ type MascotAvatarProps = Pick<
   'customMascotImage' | 'equippedRewardIds' | 'selectedMascotId'
 > & {
   celebrating?: boolean
+  level?: number
   decorative?: boolean
+  levelUpFlash?: boolean
   size?: 'small' | 'large'
 }
 
@@ -67,6 +70,8 @@ function MascotAvatar({
   decorative = false,
   equippedRewardIds,
   selectedMascotId,
+  level,
+  levelUpFlash = false,
   size = 'large',
 }: MascotAvatarProps) {
   const selectedMascot =
@@ -81,7 +86,7 @@ function MascotAvatar({
     <div
       className={`mascot-stage ${size === 'small' ? 'mascot-stage-small' : ''} ${
         celebrating ? 'celebrating' : ''
-      }`}
+      } ${level ? `mascot-level-${level}` : ''} ${levelUpFlash ? 'level-up' : ''}`}
     >
       <img
         alt={decorative ? '' : imageAlt}
@@ -97,6 +102,7 @@ function MascotAvatar({
 export function MascotPanel({
   selectedMascotId,
   customMascotImage,
+  levelUpFlash,
   level,
   coinBalance,
   ownedRewardIds,
@@ -134,6 +140,8 @@ export function MascotPanel({
       >
         <MascotAvatar
           customMascotImage={customMascotImage}
+          level={level}
+          levelUpFlash={Boolean(levelUpFlash)}
           decorative
           equippedRewardIds={equippedRewardIds}
           selectedMascotId={selectedMascotId}
@@ -143,6 +151,11 @@ export function MascotPanel({
           <em>打字伙伴</em>
           <strong>Lv.{level}</strong>
         </span>
+        {levelUpFlash ? (
+          <span className="mascot-level-up-badge" role="status">
+            {`升级到 Lv.${levelUpFlash.to}`}
+          </span>
+        ) : null}
       </button>
 
       {isOpen ? (
@@ -168,6 +181,11 @@ export function MascotPanel({
               <h2 id="mascot-heading">打字伙伴</h2>
               <p>{mascotName}</p>
               <strong>Lv.{level}</strong>
+              {levelUpFlash ? (
+                <p className="mascot-level-toast" role="status">
+                  🎉 升级啦！等级提升到 Lv.{levelUpFlash.to}
+                </p>
+              ) : null}
             </div>
 
             <button
@@ -178,6 +196,7 @@ export function MascotPanel({
             >
               <MascotAvatar
                 celebrating={cheerCount > 0}
+                level={level}
                 customMascotImage={customMascotImage}
                 equippedRewardIds={equippedRewardIds}
                 selectedMascotId={selectedMascotId}

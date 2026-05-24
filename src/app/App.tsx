@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CourseMap } from '../components/CourseMap'
 import { KeyboardTips } from '../components/KeyboardTips'
@@ -69,12 +69,29 @@ function getUnlockHint(lesson: Lesson, records: PracticeRecord[]): string {
   return `再通过 ${remaining} 次，就能解锁「${nextLesson.title}」`
 }
 
-function getAddedMistakeKeys(prompt: string, previousInput: string, nextInput: string): string[] {
-  return Array.from(nextInput).flatMap((actual, index) => {
+function getUpdatedMistakeIndexes(
+  prompt: string,
+  previousInput: string,
+  nextInput: string,
+  existingIndexes: number[],
+): number[] {
+  const nextMistakeIndexes = new Set(existingIndexes)
+  const inputLength = Math.min(nextInput.length, prompt.length)
+
+  for (let index = 0; index < inputLength; index += 1) {
+    const actual = nextInput[index]
     const previous = previousInput[index]
 
-    return actual !== previous && actual !== prompt[index] ? [prompt[index]] : []
-  })
+    if (actual !== previous && actual !== prompt[index]) {
+      nextMistakeIndexes.add(index)
+    }
+  }
+
+  return [...nextMistakeIndexes].sort((a, b) => a - b)
+}
+
+function getMistakeKeys(prompt: string, mistakeIndexes: number[]): string[] {
+  return mistakeIndexes.map((index) => prompt[index]).filter(Boolean)
 }
 
 function downloadTextFile(fileName: string, content: string, type: string) {
@@ -90,6 +107,65 @@ function downloadTextFile(fileName: string, content: string, type: string) {
   URL.revokeObjectURL(url)
 }
 
+type CoinDrop = {
+  id: number
+  left: number
+  drift: number
+  delay: number
+  duration: number
+  size: number
+  rotation: number
+}
+
+type LevelUpFlash = {
+  from: number
+  to: number
+  id: number
+}
+
+type AudioToneOptions = {
+  duration: number
+  type?: OscillatorType
+  volume?: number
+  frequency: number
+  timeOffset?: number
+}
+
+function createAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const AudioContextClass =
+    window.AudioContext ??
+    (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+
+  if (!AudioContextClass) {
+    return null
+  }
+
+  return new AudioContextClass()
+}
+
+function playTone(context: AudioContext, options: AudioToneOptions) {
+  const { duration, type = 'triangle', volume = 0.03, frequency, timeOffset = 0 } = options
+  const now = context.currentTime + timeOffset
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+
+  oscillator.type = type
+  oscillator.frequency.setValueAtTime(frequency, now)
+
+  gain.gain.setValueAtTime(0.0001, now)
+  gain.gain.linearRampToValueAtTime(volume, now + 0.02)
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+
+  oscillator.connect(gain)
+  gain.connect(context.destination)
+  oscillator.start(now)
+  oscillator.stop(now + duration)
+}
+
 export default function App() {
   const [practiceData, setPracticeData] = useState(() => loadPracticeData())
   const [selectedLessonId, setSelectedLessonId] = useState(() =>
@@ -102,10 +178,16 @@ export default function App() {
   const [activePromptIndex, setActivePromptIndex] = useState(0)
   const [result, setResult] = useState<PracticeRecord | null>(null)
   const [sessionMistakes, setSessionMistakes] = useState(0)
-  const [sessionMistakeKeys, setSessionMistakeKeys] = useState<string[]>([])
+  const [sessionMistakeIndexes, setSessionMistakeIndexes] = useState<number[]>([])
   const [currentCombo, setCurrentCombo] = useState(0)
   const [bestCombo, setBestCombo] = useState(0)
+  const [coinDrops, setCoinDrops] = useState<CoinDrop[]>([])
+  const [audioEnabled, setAudioEnabled] = useState(true)
+  const [isMusicEnabled, setIsMusicEnabled] = useState(false)
   const [saveWarning, setSaveWarning] = useState('')
+  const [levelUpFlash, setLevelUpFlash] = useState<LevelUpFlash | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const musicTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const selectedLesson = getLessonById(selectedLessonId) ?? getAllLessons()[0]
   const completedCount = practiceData.records.filter(
@@ -131,6 +213,153 @@ export default function App() {
     getMascotLevel(practiceData.records),
     getMascotLevelFromXp(practiceData.mascotXp),
   )
+  const shouldReduceMotion =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const getContext = useCallback(() => {
+    const context = audioContextRef.current
+
+    if (context) {
+      void context.resume()
+      return context
+    }
+
+    const nextContext = createAudioContext()
+
+    if (nextContext) {
+      audioContextRef.current = nextContext
+    }
+
+    return nextContext
+  }, [])
+
+  useEffect(() => {
+    if (!levelUpFlash) {
+      return
+    }
+
+    const flashId = window.setTimeout(() => {
+      setLevelUpFlash(null)
+    }, 1600)
+
+    return () => window.clearTimeout(flashId)
+  }, [levelUpFlash])
+
+  const clearMusicLoop = useCallback(() => {
+    if (musicTimerRef.current !== null) {
+      clearInterval(musicTimerRef.current)
+      musicTimerRef.current = null
+    }
+  }, [])
+
+  const stopMusic = useCallback(() => {
+    clearMusicLoop()
+    const context = audioContextRef.current
+
+    if (context?.state === 'running') {
+      void context.suspend()
+    }
+  }, [clearMusicLoop])
+
+  function playRewardSound(coinCount: number) {
+    if (!audioEnabled || shouldReduceMotion) {
+      return
+    }
+
+    const context = getContext()
+
+    if (!context) {
+      return
+    }
+
+    const baseNotes = [440, 554.37, 659.25, 783.99]
+    const dropNoteCount = Math.min(coinCount, baseNotes.length)
+    const maxCount = Math.max(1, dropNoteCount)
+    const playedNotes = baseNotes.slice(0, maxCount)
+
+    playedNotes.forEach((frequency, index) => {
+      playTone(context, {
+        duration: 0.22,
+        frequency,
+        volume: 0.05,
+        timeOffset: index * 0.08,
+        type: 'triangle',
+      })
+    })
+  }
+
+  const playMusicLoop = useCallback(() => {
+    if (!audioEnabled || !isMusicEnabled || shouldReduceMotion) {
+      return
+    }
+
+    const context = getContext()
+
+    if (!context) {
+      return
+    }
+
+    const melody = [392, 523.25, 587.33, 659.25, 523.25, 392]
+
+    melody.forEach((frequency, index) => {
+      playTone(context, {
+        duration: 0.18,
+        frequency,
+        volume: 0.018,
+        timeOffset: index * 0.12,
+        type: 'sine',
+      })
+    })
+  }, [audioEnabled, isMusicEnabled, shouldReduceMotion, getContext])
+
+  const startMusic = useCallback(() => {
+    if (musicTimerRef.current !== null || !audioEnabled || !isMusicEnabled) {
+      return
+    }
+
+    const context = getContext()
+
+    if (!context) {
+      return
+    }
+
+    playMusicLoop()
+    musicTimerRef.current = setInterval(playMusicLoop, 1900)
+  }, [audioEnabled, isMusicEnabled, getContext, playMusicLoop])
+
+  function toggleMusic() {
+    setIsMusicEnabled((enabled) => !enabled)
+  }
+
+  function toggleAudio() {
+    setAudioEnabled((enabled) => !enabled)
+  }
+
+  function spawnCoinDrops(coinCount: number) {
+    if (!coinCount || shouldReduceMotion) {
+      return
+    }
+
+    const dropCount = Math.min(12, Math.max(1, Math.ceil(coinCount / 2)))
+    const nextTick = performance.now()
+    const nextDrops: CoinDrop[] = Array.from({ length: dropCount }, (_, index) => ({
+      id: Math.floor(nextTick) + index,
+      left: Math.random() * 86 + 6,
+      drift: Math.random() * 60 - 30,
+      delay: Math.random() * 240 + index * 45,
+      duration: 1 + Math.random() * 0.9,
+      size: 0.75 + Math.random() * 0.65,
+      rotation: Math.random() * 180 - 90,
+    }))
+
+    setCoinDrops((current) => [...current, ...nextDrops])
+  }
+
+  function dismissCoinDrop(dropId: number) {
+    setCoinDrops((current) => current.filter((drop) => drop.id !== dropId))
+  }
 
   function updatePracticeData(nextData: typeof practiceData) {
     const saveResult = savePracticeData(nextData)
@@ -143,7 +372,7 @@ export default function App() {
     setInput('')
     setResult(null)
     setSessionMistakes(0)
-    setSessionMistakeKeys([])
+    setSessionMistakeIndexes([])
     setCurrentCombo(0)
     setBestCombo(0)
     setSaveWarning('')
@@ -151,20 +380,30 @@ export default function App() {
     setActivePromptIndex(nextPromptIndex)
     setStartedAt(new Date().toISOString())
     setIsPracticing(true)
+    setCoinDrops([])
+
+    if (isMusicEnabled) {
+      startMusic()
+    }
+  }
+
+  function cleanupPracticeState() {
+    setInput('')
+    setResult(null)
+    setSessionMistakes(0)
+    setSessionMistakeIndexes([])
+    setCurrentCombo(0)
+    setBestCombo(0)
+    setSaveWarning('')
   }
 
   function selectLesson(lesson: Lesson) {
     setSelectedLessonId(lesson.id)
-    setInput('')
-    setResult(null)
-    setSessionMistakes(0)
-    setSessionMistakeKeys([])
-    setCurrentCombo(0)
-    setBestCombo(0)
-    setSaveWarning('')
+    cleanupPracticeState()
     setActivePrompt('')
     setActivePromptIndex(0)
     setIsPracticing(false)
+    setCoinDrops([])
   }
 
   function completePractice(
@@ -197,12 +436,28 @@ export default function App() {
       coinsEarned: reward.coins,
       xpEarned: reward.xp,
     }
+    const nextMascotXp = practiceData.mascotXp + reward.xp
+    const nextRecords = [...practiceData.records, record]
+    const nextMascotLevel = Math.max(getMascotLevel(nextRecords), getMascotLevelFromXp(nextMascotXp))
+
+    if (nextMascotLevel > mascotLevel) {
+      setLevelUpFlash({
+        from: mascotLevel,
+        to: nextMascotLevel,
+        id: Date.now(),
+      })
+    }
+
+    if (reward.coins > 0) {
+      spawnCoinDrops(reward.coins)
+      playRewardSound(reward.coins)
+    }
     const nextData = {
       ...practiceData,
-      records: [...practiceData.records, record],
+      records: nextRecords,
       lastLessonId: selectedLesson.id,
       coinBalance: practiceData.coinBalance + reward.coins,
-      mascotXp: practiceData.mascotXp + reward.xp,
+      mascotXp: nextMascotXp,
     }
 
     updatePracticeData(nextData)
@@ -210,10 +465,27 @@ export default function App() {
     setIsPracticing(false)
   }
 
+  useEffect(() => {
+    if (isMusicEnabled && audioEnabled) {
+      startMusic()
+    } else {
+      stopMusic()
+    }
+
+    return () => {
+      clearMusicLoop()
+    }
+  }, [audioEnabled, isMusicEnabled, startMusic, stopMusic, clearMusicLoop])
+
   function handleInputChange(nextInput: string) {
     const trimmedInput = nextInput.slice(0, prompt.length)
-    const addedMistakeKeys = getAddedMistakeKeys(prompt, input, trimmedInput)
-    const nextSessionMistakeKeys = [...sessionMistakeKeys, ...addedMistakeKeys]
+    const nextSessionMistakeIndexes = getUpdatedMistakeIndexes(
+      prompt,
+      input,
+      trimmedInput,
+      sessionMistakeIndexes,
+    )
+    const nextSessionMistakeKeys = getMistakeKeys(prompt, nextSessionMistakeIndexes)
     const nextSessionMistakes = nextSessionMistakeKeys.length
     let nextCurrentCombo = currentCombo
     let nextBestCombo = bestCombo
@@ -232,7 +504,7 @@ export default function App() {
 
     setInput(trimmedInput)
     setSessionMistakes(nextSessionMistakes)
-    setSessionMistakeKeys(nextSessionMistakeKeys)
+    setSessionMistakeIndexes(nextSessionMistakeIndexes)
     setCurrentCombo(nextCurrentCombo)
     setBestCombo(nextBestCombo)
 
@@ -297,6 +569,30 @@ export default function App() {
 
   return (
     <div className={`app-shell theme-${practiceData.selectedThemeId}`}>
+      <div
+        aria-label="金币掉落特效"
+        className="coin-rain-layer"
+      >
+        {coinDrops.map((coinDrop) => (
+          <span
+            className="coin-drop"
+            key={coinDrop.id}
+            onAnimationEnd={() => dismissCoinDrop(coinDrop.id)}
+            style={
+              {
+                '--coin-left': `${coinDrop.left}%`,
+                '--coin-drift': `${coinDrop.drift}px`,
+                '--coin-delay': `${coinDrop.delay}ms`,
+                '--coin-duration': `${coinDrop.duration}s`,
+                '--coin-rotation': `${coinDrop.rotation}deg`,
+                '--coin-size': `${coinDrop.size}rem`,
+              } as CSSProperties
+            }
+          >
+            🪙
+          </span>
+        ))}
+      </div>
       <header className="top-bar">
         <div className="brand-mark" aria-hidden="true">
           ⌨
@@ -306,6 +602,22 @@ export default function App() {
           <h1>打字小课堂</h1>
         </div>
         <div className="top-actions">
+          <button
+            aria-pressed={isMusicEnabled}
+            className={`music-toggle ${isMusicEnabled ? 'active' : ''}`}
+            onClick={toggleMusic}
+            type="button"
+          >
+            {isMusicEnabled ? '🎵 音乐开' : '🎵 音乐关'}
+          </button>
+          <button
+            aria-pressed={audioEnabled}
+            className={`sound-toggle ${audioEnabled ? 'active' : ''}`}
+            onClick={toggleAudio}
+            type="button"
+          >
+            {audioEnabled ? '🔊 音效开' : '🔇 音效关'}
+          </button>
           <ThemeSelector
             onSelectTheme={selectTheme}
             selectedThemeId={practiceData.selectedThemeId}
@@ -314,6 +626,7 @@ export default function App() {
             coinBalance={practiceData.coinBalance}
             customMascotImage={practiceData.customMascotImage}
             equippedRewardIds={practiceData.equippedRewardIds}
+            levelUpFlash={levelUpFlash}
             level={mascotLevel}
             onBuyReward={buyReward}
             onSelectMascot={selectMascot}
@@ -330,6 +643,7 @@ export default function App() {
           <PracticePanel
             evaluation={evaluation}
             input={input}
+            mistakeIndexes={sessionMistakeIndexes}
             isPracticing={isPracticing}
             lesson={selectedLesson}
             mistakeCount={sessionMistakes}
