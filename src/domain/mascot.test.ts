@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 
-import { getMascotLevel, getUnlockedRewards } from './mascot'
+import {
+  getMascotLevel,
+  getMascotLevelFromXp,
+  getPurchasableRewards,
+  getUnlockedRewards,
+} from './mascot'
 import type { PracticeRecord } from './types'
 
 function record(overrides: Partial<PracticeRecord>): PracticeRecord {
@@ -59,6 +64,23 @@ describe('mascot progression', () => {
       'keycap-crown',
       'hero-cape',
       'gold-medal',
+    ])
+  })
+
+  test('levels the mascot from experience points', () => {
+    expect(getMascotLevelFromXp(0)).toBe(1)
+    expect(getMascotLevelFromXp(60)).toBe(2)
+    expect(getMascotLevelFromXp(140)).toBe(3)
+    expect(getMascotLevelFromXp(260)).toBe(4)
+    expect(getMascotLevelFromXp(420)).toBe(5)
+  })
+
+  test('filters shop rewards by mascot level', () => {
+    expect(getPurchasableRewards(1).map((reward) => reward.id)).toEqual(['star-sticker'])
+    expect(getPurchasableRewards(3).map((reward) => reward.id)).toEqual([
+      'star-sticker',
+      'keycap-crown',
+      'hero-cape',
     ])
   })
 })

@@ -10,6 +10,8 @@ type PracticePanelProps = {
   evaluation: PracticeEvaluation
   isPracticing: boolean
   mistakeCount: number
+  currentCombo: number
+  bestCombo: number
   promptIndex: number
   promptTotal: number
   onStart: () => void
@@ -24,6 +26,8 @@ export function PracticePanel({
   evaluation,
   isPracticing,
   mistakeCount,
+  currentCombo,
+  bestCombo,
   promptIndex,
   promptTotal,
   onStart,
@@ -88,9 +92,17 @@ export function PracticePanel({
           <span>当前表现</span>
           <strong>{evaluation.mistakes === 0 ? '很棒！' : '再试一次'}</strong>
         </div>
+        <div className={currentCombo >= 5 ? 'combo-hot' : ''}>
+          <span>连对</span>
+          <strong>{currentCombo}</strong>
+        </div>
         <div>
           <span>小错误</span>
           <strong>{mistakeCount}</strong>
+        </div>
+        <div>
+          <span>最好</span>
+          <strong>{bestCombo}</strong>
         </div>
       </div>
     </main>

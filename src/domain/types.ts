@@ -49,4 +49,7 @@ export type PracticeRecord = {
   accuracy: number
   stars: 1 | 2 | 3
   passed: boolean
+  bestCombo?: number
+  coinsEarned?: number
+  xpEarned?: number
 }

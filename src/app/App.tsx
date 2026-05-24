@@ -9,7 +9,14 @@ import { ProgressSummary } from '../components/ProgressSummary'
 import { ResultCard } from '../components/ResultCard'
 import { ThemeSelector } from '../components/ThemeSelector'
 import { courses, getAllLessons, getLessonById } from '../data/courses'
-import { getMascotLevel, getUnlockedRewards, type MascotId } from '../domain/mascot'
+import {
+  getMascotLevel,
+  getMascotLevelFromXp,
+  rewards,
+  type MascotId,
+  type RewardId,
+} from '../domain/mascot'
+import { calculatePracticeReward } from '../domain/gamification'
 import { evaluatePractice } from '../domain/practiceEngine'
 import { getRequiredPasses } from '../domain/progress'
 import { buildPracticeReportCsv } from '../domain/report'
@@ -96,6 +103,8 @@ export default function App() {
   const [result, setResult] = useState<PracticeRecord | null>(null)
   const [sessionMistakes, setSessionMistakes] = useState(0)
   const [sessionMistakeKeys, setSessionMistakeKeys] = useState<string[]>([])
+  const [currentCombo, setCurrentCombo] = useState(0)
+  const [bestCombo, setBestCombo] = useState(0)
   const [saveWarning, setSaveWarning] = useState('')
 
   const selectedLesson = getLessonById(selectedLessonId) ?? getAllLessons()[0]
@@ -118,8 +127,10 @@ export default function App() {
   const promptIndex = activePromptIndex || nextPromptIndex
   const evaluation = evaluatePractice(prompt, input)
   const unlockHint = getUnlockHint(selectedLesson, practiceData.records)
-  const mascotLevel = getMascotLevel(practiceData.records)
-  const unlockedRewards = getUnlockedRewards(practiceData.records)
+  const mascotLevel = Math.max(
+    getMascotLevel(practiceData.records),
+    getMascotLevelFromXp(practiceData.mascotXp),
+  )
 
   function updatePracticeData(nextData: typeof practiceData) {
     const saveResult = savePracticeData(nextData)
@@ -133,6 +144,8 @@ export default function App() {
     setResult(null)
     setSessionMistakes(0)
     setSessionMistakeKeys([])
+    setCurrentCombo(0)
+    setBestCombo(0)
     setSaveWarning('')
     setActivePrompt(nextPrompt)
     setActivePromptIndex(nextPromptIndex)
@@ -146,17 +159,24 @@ export default function App() {
     setResult(null)
     setSessionMistakes(0)
     setSessionMistakeKeys([])
+    setCurrentCombo(0)
+    setBestCombo(0)
     setSaveWarning('')
     setActivePrompt('')
     setActivePromptIndex(0)
     setIsPracticing(false)
   }
 
-  function completePractice(nextInput: string, mistakeCount: number, mistakeKeys: string[]) {
+  function completePractice(
+    nextInput: string,
+    mistakeCount: number,
+    mistakeKeys: string[],
+    completedBestCombo: number,
+  ) {
     const completedAt = new Date().toISOString()
     const nextEvaluation = evaluatePractice(prompt, nextInput)
     const accuracy = calculateAccuracy(prompt.length, mistakeCount)
-    const record: PracticeRecord = {
+    const baseRecord: PracticeRecord = {
       id: createRecordId(),
       lessonId: selectedLesson.id,
       prompt,
@@ -169,11 +189,20 @@ export default function App() {
       accuracy,
       stars: calculateStars(accuracy),
       passed: isPassed(accuracy, nextEvaluation.isComplete),
+      bestCombo: completedBestCombo,
+    }
+    const reward = calculatePracticeReward(baseRecord, practiceData.records, new Date(completedAt))
+    const record: PracticeRecord = {
+      ...baseRecord,
+      coinsEarned: reward.coins,
+      xpEarned: reward.xp,
     }
     const nextData = {
       ...practiceData,
       records: [...practiceData.records, record],
       lastLessonId: selectedLesson.id,
+      coinBalance: practiceData.coinBalance + reward.coins,
+      mascotXp: practiceData.mascotXp + reward.xp,
     }
 
     updatePracticeData(nextData)
@@ -186,13 +215,29 @@ export default function App() {
     const addedMistakeKeys = getAddedMistakeKeys(prompt, input, trimmedInput)
     const nextSessionMistakeKeys = [...sessionMistakeKeys, ...addedMistakeKeys]
     const nextSessionMistakes = nextSessionMistakeKeys.length
+    let nextCurrentCombo = currentCombo
+    let nextBestCombo = bestCombo
+
+    if (trimmedInput.length > input.length) {
+      for (let index = input.length; index < trimmedInput.length; index += 1) {
+        if (trimmedInput[index] === prompt[index]) {
+          nextCurrentCombo += 1
+        } else {
+          nextCurrentCombo = 0
+        }
+
+        nextBestCombo = Math.max(nextBestCombo, nextCurrentCombo)
+      }
+    }
 
     setInput(trimmedInput)
     setSessionMistakes(nextSessionMistakes)
     setSessionMistakeKeys(nextSessionMistakeKeys)
+    setCurrentCombo(nextCurrentCombo)
+    setBestCombo(nextBestCombo)
 
     if (trimmedInput.length >= prompt.length) {
-      completePractice(trimmedInput, nextSessionMistakes, nextSessionMistakeKeys)
+      completePractice(trimmedInput, nextSessionMistakes, nextSessionMistakeKeys, nextBestCombo)
     }
   }
 
@@ -206,6 +251,41 @@ export default function App() {
 
   function selectTheme(selectedThemeId: ThemeId) {
     updatePracticeData({ ...practiceData, selectedThemeId })
+  }
+
+  function buyReward(rewardId: RewardId) {
+    const reward = rewards.find((candidate) => candidate.id === rewardId)
+
+    if (
+      !reward ||
+      practiceData.ownedRewardIds.includes(rewardId) ||
+      reward.unlockLevel > mascotLevel ||
+      practiceData.coinBalance < reward.cost
+    ) {
+      return
+    }
+
+    updatePracticeData({
+      ...practiceData,
+      coinBalance: practiceData.coinBalance - reward.cost,
+      ownedRewardIds: [...practiceData.ownedRewardIds, rewardId],
+      equippedRewardIds: [...practiceData.equippedRewardIds, rewardId],
+    })
+  }
+
+  function toggleReward(rewardId: RewardId) {
+    if (!practiceData.ownedRewardIds.includes(rewardId)) {
+      return
+    }
+
+    const isEquipped = practiceData.equippedRewardIds.includes(rewardId)
+
+    updatePracticeData({
+      ...practiceData,
+      equippedRewardIds: isEquipped
+        ? practiceData.equippedRewardIds.filter((item) => item !== rewardId)
+        : [...practiceData.equippedRewardIds, rewardId],
+    })
   }
 
   function exportResults() {
@@ -231,11 +311,15 @@ export default function App() {
             selectedThemeId={practiceData.selectedThemeId}
           />
           <MascotPanel
+            coinBalance={practiceData.coinBalance}
             customMascotImage={practiceData.customMascotImage}
+            equippedRewardIds={practiceData.equippedRewardIds}
             level={mascotLevel}
+            onBuyReward={buyReward}
             onSelectMascot={selectMascot}
+            onToggleReward={toggleReward}
             onUploadCustomMascot={uploadCustomMascot}
-            rewards={unlockedRewards}
+            ownedRewardIds={practiceData.ownedRewardIds}
             selectedMascotId={practiceData.selectedMascotId}
           />
         </div>
@@ -249,6 +333,8 @@ export default function App() {
             isPracticing={isPracticing}
             lesson={selectedLesson}
             mistakeCount={sessionMistakes}
+            currentCombo={currentCombo}
+            bestCombo={bestCombo}
             onInputChange={handleInputChange}
             onStart={startPractice}
             promptIndex={promptIndex}
@@ -266,7 +352,11 @@ export default function App() {
         </section>
 
         <div className="right-column">
-          <ProgressSummary records={practiceData.records} />
+          <ProgressSummary
+            coinBalance={practiceData.coinBalance}
+            mascotXp={practiceData.mascotXp}
+            records={practiceData.records}
+          />
           <CourseMap
             courses={courses}
             onSelectLesson={selectLesson}

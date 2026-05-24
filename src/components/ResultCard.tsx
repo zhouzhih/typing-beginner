@@ -53,6 +53,9 @@ export function ResultCard({
         <span>准确率 {result.accuracy}%</span>
         <span>小错误 {result.mistakes}</span>
         <span>用时 {Math.max(1, Math.round(result.durationMs / 1000))} 秒</span>
+        <span>获得 {result.coinsEarned ?? 0} 金币</span>
+        <span>伙伴经验 +{result.xpEarned ?? 0}</span>
+        <span>最高连对 {result.bestCombo ?? 0}</span>
       </div>
       <p className="unlock-hint">{unlockHint}</p>
       {saveWarning ? <p className="warning-text">{saveWarning}</p> : null}
