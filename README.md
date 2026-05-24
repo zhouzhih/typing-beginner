@@ -1,5 +1,7 @@
 # 打字小课堂 KeySprout
 
+[中文](README.md) | [English](README.en.md)
+
 [![CI](https://github.com/zhouzhih/typing-beginner/actions/workflows/ci.yml/badge.svg)](https://github.com/zhouzhih/typing-beginner/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/zhouzhih/typing-beginner/actions/workflows/codeql.yml/badge.svg)](https://github.com/zhouzhih/typing-beginner/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
