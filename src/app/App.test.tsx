@@ -63,6 +63,11 @@ describe('App', () => {
     expect(data.records).toHaveLength(1)
     expect(data.records[0].lessonId).toBe('home-row')
     expect(data.records[0].passed).toBe(true)
+    expect(data.records[0].coinsEarned).toBeGreaterThan(0)
+    expect(data.records[0].xpEarned).toBeGreaterThan(0)
+    expect(data.coinBalance).toBe(data.records[0].coinsEarned)
+    expect(data.mascotXp).toBe(data.records[0].xpEarned)
+    expect(screen.getByText(/获得 .* 金币/)).toBeInTheDocument()
   })
 
   test('keeps mistakes after a child deletes and corrects the input', async () => {
@@ -190,6 +195,10 @@ describe('App', () => {
         selectedMascotId: 'keyboard-sprite',
         customMascotImage: '',
         selectedThemeId: 'meadow',
+        coinBalance: 0,
+        mascotXp: 0,
+        ownedRewardIds: [],
+        equippedRewardIds: [],
         records: [passedRecord('home-row-1'), passedRecord('home-row-2')],
       },
       localStorage,
@@ -222,6 +231,10 @@ describe('App', () => {
         selectedMascotId: 'keyboard-sprite',
         customMascotImage: '',
         selectedThemeId: 'meadow',
+        coinBalance: 0,
+        mascotXp: 0,
+        ownedRewardIds: [],
+        equippedRewardIds: [],
         records: [
           passedRecord('home-row-1'),
           passedRecord('home-row-2'),

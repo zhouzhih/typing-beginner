@@ -1,20 +1,30 @@
 import { useState, type ChangeEvent } from 'react'
 
 import { getMascotById, mascots } from '../data/mascots'
-import type { MascotId, MascotReward } from '../domain/mascot'
+import {
+  getRewardsByIds,
+  rewards as rewardCatalog,
+  type MascotId,
+  type MascotReward,
+  type RewardId,
+} from '../domain/mascot'
 
 type MascotPanelProps = {
   selectedMascotId: MascotId
   customMascotImage: string
   level: number
-  rewards: MascotReward[]
+  coinBalance: number
+  ownedRewardIds: RewardId[]
+  equippedRewardIds: RewardId[]
   onSelectMascot: (mascotId: MascotId) => void
   onUploadCustomMascot: (imageDataUrl: string) => void
+  onBuyReward: (rewardId: RewardId) => void
+  onToggleReward: (rewardId: RewardId) => void
 }
 
 type MascotAvatarProps = Pick<
   MascotPanelProps,
-  'customMascotImage' | 'rewards' | 'selectedMascotId'
+  'customMascotImage' | 'equippedRewardIds' | 'selectedMascotId'
 > & {
   celebrating?: boolean
   decorative?: boolean
@@ -55,7 +65,7 @@ function MascotAvatar({
   celebrating = false,
   customMascotImage,
   decorative = false,
-  rewards,
+  equippedRewardIds,
   selectedMascotId,
   size = 'large',
 }: MascotAvatarProps) {
@@ -79,7 +89,7 @@ function MascotAvatar({
         className="mascot-image"
         src={imageSrc}
       />
-      <AccessoryLayer rewards={rewards} />
+      <AccessoryLayer rewards={getRewardsByIds(equippedRewardIds)} />
     </div>
   )
 }
@@ -88,12 +98,18 @@ export function MascotPanel({
   selectedMascotId,
   customMascotImage,
   level,
-  rewards,
+  coinBalance,
+  ownedRewardIds,
+  equippedRewardIds,
   onSelectMascot,
   onUploadCustomMascot,
+  onBuyReward,
+  onToggleReward,
 }: MascotPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [cheerCount, setCheerCount] = useState(0)
+  const ownedRewardSet = new Set(ownedRewardIds)
+  const equippedRewardSet = new Set(equippedRewardIds)
 
   async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -119,7 +135,7 @@ export function MascotPanel({
         <MascotAvatar
           customMascotImage={customMascotImage}
           decorative
-          rewards={rewards}
+          equippedRewardIds={equippedRewardIds}
           selectedMascotId={selectedMascotId}
           size="small"
         />
@@ -163,7 +179,7 @@ export function MascotPanel({
               <MascotAvatar
                 celebrating={cheerCount > 0}
                 customMascotImage={customMascotImage}
-                rewards={rewards}
+                equippedRewardIds={equippedRewardIds}
                 selectedMascotId={selectedMascotId}
               />
             </button>
@@ -195,12 +211,40 @@ export function MascotPanel({
             </label>
             <p className="local-note">自定义头像只保存在本机</p>
 
-            <div className="reward-row" aria-label="已解锁小道具">
-              {rewards.length > 0 ? (
-                rewards.map((reward) => <span key={reward.id}>{reward.title}</span>)
-              ) : (
-                <span>完成练习解锁小道具</span>
-              )}
+            <div className="reward-shop" aria-label="小道具商店">
+              <div className="shop-heading">
+                <strong>小道具商店</strong>
+                <span>金币 {coinBalance}</span>
+              </div>
+              {rewardCatalog.map((reward) => {
+                const isOwned = ownedRewardSet.has(reward.id)
+                const isEquipped = equippedRewardSet.has(reward.id)
+                const isLocked = level < reward.unlockLevel
+                const canBuy = !isLocked && coinBalance >= reward.cost
+                const buttonText = isLocked
+                  ? `Lv.${reward.unlockLevel}解锁`
+                  : isOwned
+                    ? isEquipped
+                      ? `取下 ${reward.title}`
+                      : `佩戴 ${reward.title}`
+                    : `购买 ${reward.title} ${reward.cost} 金币`
+
+                return (
+                  <div className="reward-shop-row" key={reward.id}>
+                    <span>
+                      {reward.title}
+                      <small>Lv.{reward.unlockLevel}</small>
+                    </span>
+                    <button
+                      disabled={isLocked || (!isOwned && !canBuy)}
+                      onClick={() => (isOwned ? onToggleReward(reward.id) : onBuyReward(reward.id))}
+                      type="button"
+                    >
+                      {buttonText}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </section>
         </div>

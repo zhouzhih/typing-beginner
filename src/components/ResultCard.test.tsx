@@ -18,6 +18,9 @@ const result: PracticeRecord = {
   accuracy: 100,
   stars: 3,
   passed: true,
+  bestCombo: 12,
+  coinsEarned: 40,
+  xpEarned: 42,
 }
 
 describe('ResultCard', () => {
@@ -38,5 +41,21 @@ describe('ResultCard', () => {
     await user.click(screen.getByRole('button', { name: '导出成绩' }))
 
     expect(onExportResults).toHaveBeenCalledTimes(1)
+  })
+
+  test('shows coins and mascot experience from the latest practice', () => {
+    render(
+      <ResultCard
+        result={result}
+        saveWarning=""
+        unlockHint="再通过 1 次，就能解锁「字母朋友」"
+        onExportResults={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('获得 40 金币')).toBeInTheDocument()
+    expect(screen.getByText('伙伴经验 +42')).toBeInTheDocument()
+    expect(screen.getByText('最高连对 12')).toBeInTheDocument()
   })
 })
