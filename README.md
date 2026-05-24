@@ -42,6 +42,7 @@
 - npm 11+
 - Rust stable，包含 `cargo`
 - macOS App 构建需要 Xcode Command Line Tools
+- 默认 macOS App 是 Universal 构建，同时兼容 Intel Mac 和 Apple Silicon Mac
 - Tauri CLI 使用项目里的本地依赖，不需要全局安装
 
 安装依赖：
@@ -86,6 +87,12 @@ source "$HOME/.cargo/env"
 cargo --version
 ```
 
+Universal 构建还需要安装两个 macOS Rust target，`make mac-app` 会自动执行：
+
+```bash
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+```
+
 如果新开终端后仍然提示找不到 `cargo`，把下面这一行加入 `~/.zshrc` 后重新打开终端：
 
 ```bash
@@ -116,12 +123,26 @@ make mac-app
 src-tauri/target/release/bundle/macos/打字小课堂.app
 ```
 
+Universal 构建产物路径：
+
+```text
+src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app
+```
+
 当前构建使用本机 ad-hoc 签名，适合自己电脑和开发测试使用；正式分发给更多用户前，建议配置 Apple Developer ID 签名和 notarization。
+
+默认产物是 Universal App，兼容 Intel Mac 和 Apple Silicon Mac。
 
 打开本机 App：
 
 ```bash
 open "src-tauri/target/release/bundle/macos/打字小课堂.app"
+```
+
+如果使用默认 Universal 构建，打开这个路径：
+
+```bash
+open "src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app"
 ```
 
 本地调试桌面版：
@@ -150,7 +171,7 @@ make release-tag VERSION=v0.1.0
 
 - `CI`：push 和 pull request 时运行 lint、typecheck、test、web build。
 - `CodeQL`：对 JavaScript/TypeScript 做安全扫描，每周自动运行一次。
-- `macOS App Build`：每次 `main` 更新、手动触发或推送 `v*` tag 时构建 macOS App，上传 artifact，并创建 GitHub Release。
+- `macOS App Build`：每次 `main` 更新、手动触发或推送 `v*` tag 时构建 Universal macOS App，上传 artifact，并创建 GitHub Release。
 
 Release 规则：
 

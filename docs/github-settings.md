@@ -31,7 +31,7 @@
 
 ### Release Signing
 
-当前 macOS App 构建会在每次 `main` 更新时创建预发布 Release，并在推送 `v*` tag 时创建正式 Release。构建产物使用 ad-hoc 签名，适合自己使用和开发测试。正式发给更多用户时，需要配置 Apple Developer ID 签名和 notarization，通常需要在 GitHub Secrets 中添加：
+当前 macOS App 构建会在每次 `main` 更新时创建预发布 Release，并在推送 `v*` tag 时创建正式 Release。构建产物是 Universal App，兼容 Intel Mac 和 Apple Silicon Mac，并使用 ad-hoc 签名，适合自己使用和开发测试。正式发给更多用户时，需要配置 Apple Developer ID 签名和 notarization，通常需要在 GitHub Secrets 中添加：
 
 - `APPLE_ID`
 - `APPLE_TEAM_ID`

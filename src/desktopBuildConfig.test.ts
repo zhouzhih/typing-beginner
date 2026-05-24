@@ -8,12 +8,29 @@ describe('desktop build config', () => {
       scripts: Record<string, string>
     }
     const makefile = readFileSync('Makefile', 'utf-8')
+    const universalBundlePath =
+      'src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app'
 
     expect(packageJson.scripts.tauri).toBe('tauri')
     expect(packageJson.scripts['mac:build']).toBe('tauri build')
     expect(makefile).toContain('mac-app:')
-    expect(makefile).toContain('npm run mac:build')
+    expect(makefile).toContain('npm run mac:build -- --target universal-apple-darwin')
+    expect(makefile).toContain(universalBundlePath)
     expect(makefile).toContain('codesign --force --deep --sign -')
+  })
+
+  test('builds release apps as universal macOS binaries for Intel and Apple Silicon', () => {
+    const makefile = readFileSync('Makefile', 'utf-8')
+    const macosBuildWorkflow = readFileSync('.github/workflows/macos-build.yml', 'utf-8')
+    const universalBundlePath =
+      'src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app'
+
+    expect(makefile).toContain('rustup target add aarch64-apple-darwin x86_64-apple-darwin')
+    expect(macosBuildWorkflow).toContain(
+      'rustup target add aarch64-apple-darwin x86_64-apple-darwin',
+    )
+    expect(macosBuildWorkflow).toContain('Universal macOS app build')
+    expect(macosBuildWorkflow).toContain(universalBundlePath)
   })
 
   test('points Tauri at the Vite build output for mac packaging', () => {
