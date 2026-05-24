@@ -36,9 +36,10 @@ jobs:
       - name: Setup Rust
         run: |
           rustup default stable
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
           rustup show
 
-      - name: Build and ad-hoc sign app
+      - name: Build universal macOS app and ad-hoc sign app
         run: make mac-app
 
       - name: Resolve release metadata
@@ -57,7 +58,7 @@ jobs:
             prerelease="true"
           fi
 
-          asset="KeySprout-${tag}-macos.zip"
+          asset="KeySprout-${tag}-macos-universal.zip"
           {
             echo "tag=$tag"
             echo "title=$title"
@@ -68,7 +69,7 @@ jobs:
       - name: Package app artifact
         run: |
           ditto -c -k --keepParent \
-            "src-tauri/target/release/bundle/macos/打字小课堂.app" \
+            "src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app" \
             "${{ steps.release.outputs.asset }}"
 
       - name: Upload app artifact
@@ -83,9 +84,10 @@ jobs:
         shell: bash
         run: |
           cat > release-notes.md <<EOF
-          macOS app build for commit ${GITHUB_SHA}.
+          Universal macOS app build for commit ${GITHUB_SHA}.
 
           - App bundle: 打字小课堂.app
+          - Architecture: universal, supports Intel and Apple Silicon Macs.
           - Signing: ad-hoc, suitable for personal testing and local use.
           - If macOS blocks opening it, right-click the app and choose Open.
           EOF

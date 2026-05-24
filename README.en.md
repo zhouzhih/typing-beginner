@@ -42,6 +42,7 @@ Recommended environment:
 - npm 11+
 - Rust stable with `cargo`
 - Xcode Command Line Tools for macOS app builds
+- The default macOS app build is universal and supports both Intel and Apple Silicon Macs.
 - The Tauri CLI is installed as a local project dependency; no global Tauri install is required.
 
 Install dependencies:
@@ -86,6 +87,12 @@ source "$HOME/.cargo/env"
 cargo --version
 ```
 
+Universal builds also require both macOS Rust targets. `make mac-app` installs them automatically:
+
+```bash
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+```
+
 If a new terminal still cannot find `cargo`, add this line to `~/.zshrc`, then reopen the terminal:
 
 ```bash
@@ -116,12 +123,26 @@ Build output:
 src-tauri/target/release/bundle/macos/打字小课堂.app
 ```
 
+Universal build output:
+
+```text
+src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app
+```
+
 The current build uses local ad-hoc signing. It is suitable for personal use and development testing. Before broader distribution, configure Apple Developer ID signing and notarization.
+
+The default output is a Universal App that supports Intel Macs and Apple Silicon Macs.
 
 Open the local app:
 
 ```bash
 open "src-tauri/target/release/bundle/macos/打字小课堂.app"
+```
+
+For the default Universal build, open this path:
+
+```bash
+open "src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app"
 ```
 
 Run the desktop app in development mode:
@@ -150,7 +171,7 @@ The repository includes these workflows:
 
 - `CI`: runs lint, typecheck, tests, and web build on pushes and pull requests.
 - `CodeQL`: scans JavaScript and TypeScript for security issues, including a weekly scheduled run.
-- `macOS App Build`: builds the macOS app on every `main` update, manual dispatch, or `v*` tag push; uploads an artifact; and creates a GitHub Release.
+- `macOS App Build`: builds the Universal macOS app on every `main` update, manual dispatch, or `v*` tag push; uploads an artifact; and creates a GitHub Release.
 
 Release behavior:
 

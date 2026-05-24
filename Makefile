@@ -1,4 +1,6 @@
-.PHONY: test web icons mac-check mac-dev mac-app release-tag verify
+MAC_APP_PATH := src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app
+
+.PHONY: test web icons mac-check mac-targets mac-dev mac-app release-tag verify
 
 test:
 	npm test
@@ -13,16 +15,20 @@ mac-check:
 	@command -v node >/dev/null || (echo "Node.js is required. Install Node 24 first."; exit 1)
 	@command -v npm >/dev/null || (echo "npm is required. Install Node.js/npm first."; exit 1)
 	@command -v cargo >/dev/null || (echo "Cargo is required. Install Rust from https://rustup.rs, then restart the terminal or run: source $$HOME/.cargo/env"; exit 1)
+	@command -v rustup >/dev/null || (echo "rustup is required for universal macOS builds. Install Rust from https://rustup.rs"; exit 1)
 	@xcode-select -p >/dev/null || (echo "Xcode Command Line Tools are required. Run: xcode-select --install"; exit 1)
 	@test -x node_modules/.bin/tauri || (echo "Local Tauri CLI is missing. Run: npm ci"; exit 1)
+
+mac-targets: mac-check
+	rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
 mac-dev: mac-check
 	npm run mac:dev
 
-mac-app: mac-check
-	npm run mac:build
-	codesign --force --deep --sign - "src-tauri/target/release/bundle/macos/打字小课堂.app"
-	codesign --verify --deep --strict --verbose=2 "src-tauri/target/release/bundle/macos/打字小课堂.app"
+mac-app: mac-check mac-targets
+	npm run mac:build -- --target universal-apple-darwin
+	codesign --force --deep --sign - "$(MAC_APP_PATH)"
+	codesign --verify --deep --strict --verbose=2 "$(MAC_APP_PATH)"
 
 release-tag:
 	@test -n "$(VERSION)" || (echo "Usage: make release-tag VERSION=v0.1.0"; exit 1)
