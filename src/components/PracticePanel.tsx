@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useRef, type ChangeEvent } from 'react'
 
 import type { Lesson, PracticeEvaluation } from '../domain/types'
 
@@ -8,6 +8,7 @@ type PracticePanelProps = {
   promptLabel: string
   input: string
   evaluation: PracticeEvaluation
+  mistakeIndexes: number[]
   isPracticing: boolean
   mistakeCount: number
   currentCombo: number
@@ -24,6 +25,7 @@ export function PracticePanel({
   promptLabel,
   input,
   evaluation,
+  mistakeIndexes,
   isPracticing,
   mistakeCount,
   currentCombo,
@@ -34,6 +36,7 @@ export function PracticePanel({
   onInputChange,
 }: PracticePanelProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const mistakeIndexSet = useMemo(() => new Set(mistakeIndexes), [mistakeIndexes])
 
   useEffect(() => {
     if (isPracticing) {
@@ -64,7 +67,14 @@ export function PracticePanel({
       <div className="prompt-box" aria-label="练习内容">
         {promptLabel ? <div className="prompt-label">{promptLabel}</div> : null}
         {evaluation.characters.map((character, index) => (
-          <span className={`prompt-char ${character.status}`} key={`${character.expected}-${index}`}>
+          <span
+            className={`prompt-char ${
+              character.status === 'incorrect' || !mistakeIndexSet.has(index)
+                ? character.status
+                : 'mistake-latched'
+            }`}
+            key={`${character.expected}-${index}`}
+          >
             {character.expected === ' ' ? '\u00A0' : character.expected}
           </span>
         ))}
