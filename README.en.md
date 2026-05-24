@@ -59,6 +59,25 @@ npm run dev
 
 Open the local URL printed in the terminal to start practicing.
 
+## HTML Version for Windows
+
+This project can run as a standalone web page without the desktop app, which works well on Windows.
+
+```bash
+npm run build
+```
+
+Open `dist/index.html` directly by double-click, or start a local static server:
+
+```bash
+cd dist
+python -m http.server 4173
+```
+
+Then visit `http://127.0.0.1:4173/index.html`.
+
+Run `make web-package` to create a distributable zip; it generates `KeySprout-web-<timestamp>.zip` by default.
+
 ## Common Commands
 
 ```bash
@@ -164,6 +183,10 @@ make release-tag VERSION=v0.1.0
 ```
 
 Pushing a `v*` tag triggers GitHub Actions to build the macOS app and upload the zip file to GitHub Releases.
+The Release now also includes:
+
+- `KeySprout-<tag>-macos-universal.zip` (macOS app)
+- `KeySprout-<tag>-web.zip` (HTML package; open `index.html` after unzipping)
 
 ## GitHub Actions
 

@@ -59,6 +59,25 @@ npm run dev
 
 打开终端显示的本地地址即可开始练习。
 
+## 纯 HTML 版（Windows 友好）
+
+本项目支持不依赖安装桌面环境的纯网页启动方式，适合 Windows 直接使用或给小朋友在浏览器/共享设备上练习。
+
+```bash
+npm run build
+```
+
+生成后可直接双击 `dist/index.html` 打开；也可以启动一个本地静态服务：
+
+```bash
+cd dist
+python -m http.server 4173
+```
+
+然后访问 `http://127.0.0.1:4173/index.html`。
+
+可用 `make web-package` 打包为可分发 zip（当前会打成 `KeySprout-web-YYYYMMDD-HHMMSS.zip`）。
+
 ## 常用命令
 
 ```bash
@@ -164,6 +183,10 @@ make release-tag VERSION=v0.1.0
 ```
 
 推送 `v*` tag 后，GitHub Actions 会构建 macOS App，并把压缩包上传到 GitHub Release。
+本次 Release 会同时包含：
+
+- `KeySprout-<tag>-macos-universal.zip`（macOS 应用）
+- `KeySprout-<tag>-web.zip`（纯 HTML 网页包，解压后打开 `index.html`）
 
 ## GitHub Actions
 

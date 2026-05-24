@@ -39,6 +39,9 @@ jobs:
           rustup target add aarch64-apple-darwin x86_64-apple-darwin
           rustup show
 
+      - name: Build web package
+        run: npm run build
+
       - name: Build universal macOS app and ad-hoc sign app
         run: make mac-app
 
@@ -59,11 +62,13 @@ jobs:
           fi
 
           asset="KeySprout-${tag}-macos-universal.zip"
+          web_asset="KeySprout-${tag}-web.zip"
           {
             echo "tag=$tag"
             echo "title=$title"
             echo "prerelease=$prerelease"
             echo "asset=$asset"
+            echo "web_asset=$web_asset"
           } >> "$GITHUB_OUTPUT"
 
       - name: Package app artifact
@@ -72,11 +77,27 @@ jobs:
             "src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app" \
             "${{ steps.release.outputs.asset }}"
 
+      - name: Package web artifact
+        run: |
+          if [ ! -d dist ]; then
+            echo "dist directory not found. Build web assets first."
+            exit 1
+          fi
+          (cd dist && zip -r "../${{ steps.release.outputs.web_asset }}" .)
+
       - name: Upload app artifact
         uses: actions/upload-artifact@v7
         with:
           name: keysprout-macos
           path: ${{ steps.release.outputs.asset }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: keysprout-web
+          path: ${{ steps.release.outputs.web_asset }}
           if-no-files-found: error
           retention-days: 14
 
@@ -90,6 +111,7 @@ jobs:
           - Architecture: universal, supports Intel and Apple Silicon Macs.
           - Signing: ad-hoc, suitable for personal testing and local use.
           - If macOS blocks opening it, right-click the app and choose Open.
+          - Web package: static HTML export in dist folder for Windows and browser use.
           EOF
 
       - name: Create GitHub release
@@ -104,6 +126,7 @@ jobs:
           args=(
             release create "$RELEASE_TAG"
             "$RELEASE_ASSET"
+            "${{ steps.release.outputs.web_asset }}"
             --target "$GITHUB_SHA"
             --title "$RELEASE_TITLE"
             --notes-file release-notes.md

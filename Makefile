@@ -1,4 +1,5 @@
 MAC_APP_PATH := src-tauri/target/universal-apple-darwin/release/bundle/macos/打字小课堂.app
+TIMESTAMP := $(shell date +%Y%m%d-%H%M%S)
 
 .PHONY: test web icons mac-check mac-targets mac-dev mac-app release-tag verify
 
@@ -7,6 +8,11 @@ test:
 
 web:
 	npm run build
+
+web-package:
+	test -d dist || (echo "Run 'make web' first or ensure the web build is available." && exit 1)
+	cd dist && zip -r "../KeySprout-web-$(TIMESTAMP).zip" .
+	@echo "Web package created: KeySprout-web-$(TIMESTAMP).zip"
 
 icons:
 	npm run icons
