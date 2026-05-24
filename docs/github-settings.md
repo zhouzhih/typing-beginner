@@ -11,7 +11,7 @@
 - Pull request 合并后自动删除分支。
 - Secret scanning、push protection、Dependabot security updates、vulnerability alerts 已开启。
 - Private vulnerability reporting 已开启。
-- GitHub Actions 已配置 CI、CodeQL 和 macOS App 构建。
+- GitHub Actions 已配置 CI、CodeQL 和 macOS App 构建/发布。
 - Dependabot 已配置 npm、Cargo 和 GitHub Actions 每周依赖检查。
 - Issue 模板、PR 模板、CODEOWNERS、MIT License、贡献指南、安全策略、行为准则和更新日志已添加。
 
@@ -31,7 +31,7 @@
 
 ### Release Signing
 
-当前 macOS App 构建使用 ad-hoc 签名，适合自己使用和开发测试。正式发给更多用户时，需要配置 Apple Developer ID 签名和 notarization，通常需要在 GitHub Secrets 中添加：
+当前 macOS App 构建会在每次 `main` 更新时创建预发布 Release，并在推送 `v*` tag 时创建正式 Release。构建产物使用 ad-hoc 签名，适合自己使用和开发测试。正式发给更多用户时，需要配置 Apple Developer ID 签名和 notarization，通常需要在 GitHub Secrets 中添加：
 
 - `APPLE_ID`
 - `APPLE_TEAM_ID`

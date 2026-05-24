@@ -38,8 +38,9 @@
 
 - Node.js 24，见 `.nvmrc`
 - npm 11+
-- Rust stable
+- Rust stable，包含 `cargo`
 - macOS App 构建需要 Xcode Command Line Tools
+- Tauri CLI 使用项目里的本地依赖，不需要全局安装
 
 安装依赖：
 
@@ -68,6 +69,40 @@ make verify        # 测试、类型检查、网页构建
 ## 构建 macOS App
 
 第一次构建会下载并编译 Rust 依赖，时间会长一些。
+
+先确认本机环境：
+
+```bash
+make mac-check
+```
+
+如果提示缺少 Rust/Cargo：
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+cargo --version
+```
+
+如果新开终端后仍然提示找不到 `cargo`，把下面这一行加入 `~/.zshrc` 后重新打开终端：
+
+```bash
+source "$HOME/.cargo/env"
+```
+
+如果提示缺少 Xcode Command Line Tools：
+
+```bash
+xcode-select --install
+```
+
+如果提示缺少 Tauri CLI，说明还没有安装项目依赖：
+
+```bash
+npm ci
+```
+
+确认通过后构建：
 
 ```bash
 make mac-app
@@ -99,13 +134,26 @@ make mac-dev
 make icons
 ```
 
+发布正式版本：
+
+```bash
+make release-tag VERSION=v0.1.0
+```
+
+推送 `v*` tag 后，GitHub Actions 会构建 macOS App，并把压缩包上传到 GitHub Release。
+
 ## GitHub Actions
 
 仓库配置了以下工作流：
 
 - `CI`：push 和 pull request 时运行 lint、typecheck、test、web build。
 - `CodeQL`：对 JavaScript/TypeScript 做安全扫描，每周自动运行一次。
-- `macOS App Build`：手动触发时构建 macOS App 并上传 artifact；推送 `v*` tag 时会创建 GitHub Release 并附上 app zip。
+- `macOS App Build`：每次 `main` 更新、手动触发或推送 `v*` tag 时构建 macOS App，上传 artifact，并创建 GitHub Release。
+
+Release 规则：
+
+- 推送到 `main`：自动创建一个预发布版本，tag 形如 `app-20260524-1200-123.1-abcdef0`，适合自己下载最新构建。
+- 推送 `v*` tag：创建正式 Release，适合标记稳定版本。
 
 Dependabot 会每周检查 npm、Cargo 和 GitHub Actions 依赖更新。
 

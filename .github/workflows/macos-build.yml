@@ -2,6 +2,7 @@ name: macOS App Build
 
 on:
   push:
+    branches: [main]
     tags:
       - 'v*'
   workflow_dispatch:
@@ -10,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: macos-build-${{ github.ref }}
+  group: macos-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -40,26 +41,74 @@ jobs:
       - name: Build and ad-hoc sign app
         run: make mac-app
 
+      - name: Resolve release metadata
+        id: release
+        shell: bash
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tag="$GITHUB_REF_NAME"
+            title="KeySprout $GITHUB_REF_NAME"
+            prerelease="false"
+          else
+            timestamp="$(date -u +'%Y%m%d-%H%M')"
+            tag="app-${timestamp}-${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}-${short_sha}"
+            title="KeySprout app build ${timestamp} (${short_sha})"
+            prerelease="true"
+          fi
+
+          asset="KeySprout-${tag}-macos.zip"
+          {
+            echo "tag=$tag"
+            echo "title=$title"
+            echo "prerelease=$prerelease"
+            echo "asset=$asset"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Package app artifact
         run: |
           ditto -c -k --keepParent \
             "src-tauri/target/release/bundle/macos/打字小课堂.app" \
-            "typing-classroom-macos.zip"
+            "${{ steps.release.outputs.asset }}"
 
       - name: Upload app artifact
         uses: actions/upload-artifact@v7
         with:
-          name: typing-classroom-macos
-          path: typing-classroom-macos.zip
+          name: keysprout-macos
+          path: ${{ steps.release.outputs.asset }}
           if-no-files-found: error
           retention-days: 14
 
-      - name: Create GitHub release for tags
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Create release notes
+        shell: bash
+        run: |
+          cat > release-notes.md <<EOF
+          macOS app build for commit ${GITHUB_SHA}.
+
+          - App bundle: 打字小课堂.app
+          - Signing: ad-hoc, suitable for personal testing and local use.
+          - If macOS blocks opening it, right-click the app and choose Open.
+          EOF
+
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+          RELEASE_ASSET: ${{ steps.release.outputs.asset }}
+          RELEASE_PRERELEASE: ${{ steps.release.outputs.prerelease }}
+        shell: bash
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "typing-classroom-macos.zip" \
-            --title "$GITHUB_REF_NAME" \
-            --generate-notes
+          args=(
+            release create "$RELEASE_TAG"
+            "$RELEASE_ASSET"
+            --target "$GITHUB_SHA"
+            --title "$RELEASE_TITLE"
+            --notes-file release-notes.md
+          )
+
+          if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+
+          gh "${args[@]}"
