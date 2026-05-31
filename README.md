@@ -179,7 +179,7 @@ make icons
 发布正式版本：
 
 ```bash
-make release-tag VERSION=v0.1.0
+make release-tag VERSION=v0.2.0
 ```
 
 推送 `v*` tag 后，GitHub Actions 会构建 macOS App，并把压缩包上传到 GitHub Release。

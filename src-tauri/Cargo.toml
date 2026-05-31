@@ -1,6 +1,6 @@
 [package]
 name = "typing-beginner"
-version = "0.1.0"
+version = "0.2.0"
 description = "小学生打字练习软件"
 authors = ["zhouzhih"]
 license = "MIT"

@@ -179,7 +179,7 @@ make icons
 Publish a stable release:
 
 ```bash
-make release-tag VERSION=v0.1.0
+make release-tag VERSION=v0.2.0
 ```
 
 Pushing a `v*` tag triggers GitHub Actions to build the macOS app and upload the zip file to GitHub Releases.

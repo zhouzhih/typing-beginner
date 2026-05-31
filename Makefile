@@ -37,7 +37,7 @@ mac-app: mac-check mac-targets
 	codesign --verify --deep --strict --verbose=2 "$(MAC_APP_PATH)"
 
 release-tag:
-	@test -n "$(VERSION)" || (echo "Usage: make release-tag VERSION=v0.1.0"; exit 1)
+	@test -n "$(VERSION)" || (echo "Usage: make release-tag VERSION=v0.2.0"; exit 1)
 	git tag "$(VERSION)"
 	git push origin "$(VERSION)"
 
