@@ -219,7 +219,7 @@ describe('App', () => {
 
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: '1 拼音入门 可练习' }))
+    await user.click(screen.getByRole('button', { name: /19 .*拼音入门 可练习|拼音入门 可练习/ }))
 
     expect(screen.getByRole('heading', { name: '拼音入门' })).toBeInTheDocument()
     expect(screen.getByText('妈妈 爸爸')).toBeInTheDocument()

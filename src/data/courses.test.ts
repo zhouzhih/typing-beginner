@@ -6,12 +6,12 @@ describe('courses', () => {
   test('provides active English and pinyin lessons', () => {
     expect(courses[0].id).toBe('english-foundation')
     expect(courses[0].status).toBe('active')
-    expect(courses[0].lessons.length).toBeGreaterThanOrEqual(6)
+    expect(courses[0].lessons.length).toBeGreaterThanOrEqual(18)
 
     const pinyinCourse = courses.find((course) => course.id === 'pinyin-starter')
 
     expect(pinyinCourse?.status).toBe('active')
-    expect(pinyinCourse?.lessons.length).toBeGreaterThanOrEqual(3)
+    expect(pinyinCourse?.lessons.length).toBeGreaterThanOrEqual(12)
   })
 
   test('finds lessons by id across active courses', () => {
@@ -38,6 +38,21 @@ describe('courses', () => {
     expect(grammarLines?.promptLabels).toContain('There is = 有一个')
     expect(storyTyping?.prompts.some((prompt) => prompt.split('.').length > 2)).toBe(true)
     expect(storyTyping?.promptLabels?.[0]).toBe('我有一张小书桌。我的书在上面。')
+  })
+
+  test('supports at least 20 total lessons', () => {
+    const allLessons = getAllLessons()
+    expect(allLessons.length).toBeGreaterThanOrEqual(30)
+    expect(allLessons.every((lesson, index) => index === 0 || lesson.level >= 1)).toBe(true)
+  })
+
+  test('includes advanced-level lesson progression for Chinese pinyin track', () => {
+    const pinyinCourse = courses.find((course) => course.id === 'pinyin-starter')
+    const advanced = pinyinCourse?.lessons.at(-1)
+
+    expect(advanced?.level).toBe(30)
+    expect(advanced?.id).toBe('junior-reading')
+    expect(advanced?.unlockAfter).toBe('junior-review')
   })
 
   test('adds pinyin lessons with chinese display labels', () => {
